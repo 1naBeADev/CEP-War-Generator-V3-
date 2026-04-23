@@ -100,7 +100,8 @@ vocD_inq.addEventListener("change", ()=>{
     "Unposted Payment",
     "Copy of Bill",
     "BOL/e Enrollment",
-    "Service Rebate"
+    "Service Rebate",
+    "​Change Number"
 ];
 
     if(inqs.includes(vocD_inq.value)){
