@@ -1,0 +1,298 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#voc-inq,#voc-ffup,#voc-comp,#voc-others,#voc-aftersales{
+    display: none;
+}
+
+#pDiv{
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#titlediv{
+    background-color: #2C3E50;
+    display: flex;
+    justify-content: baseline;
+    align-items: center;
+    flex: 10%;
+}
+
+.mainsection{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.mainsection>div{
+    width: 95%;
+}
+
+#titlediv>h1{
+    margin-left: 5%;
+    color: #fff;
+}
+
+.titleSection{
+    display: flex;
+    justify-content: center;
+    align-self: center;
+}
+
+.titleSection>div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 95%;
+    height: 5vh;
+    color: #fff;
+    background-color: #2C3E50;
+    margin-top: 3%;
+    border-radius: 5px;
+}
+
+.titleSection>div>p{
+    font-weight: 900;
+}
+
+#mainDiv{
+    display: flex;
+    width: 100%;
+    flex: 80%;
+    background-color:#fff; 
+    justify-content: center;
+    align-items: center;
+}
+
+div.mdDivs:nth-of-type(1){
+    padding-bottom: 2%;
+}
+
+div.mdDivs:nth-of-type(1),div.mdDivs:nth-of-type(2){
+    flex: 40%;
+    background-color: #ECEDEF;
+    border: 1px solid #CCCCCC;
+    height: 75vh;
+    margin: 0 1%;
+}
+
+div.mdDivs:nth-of-type(3){
+    flex: 20%;
+    background-color: #ECEDEF;
+    border: 1px solid #CCCCCC;
+    height: 75vh;
+    margin: 0 1%;
+}
+
+div.mdDivs:first-of-type{
+    overflow: scroll;
+    overflow-x: hidden; 
+    scrollbar-width: none;
+}
+
+.twoGrid{
+    display: grid;
+    grid-template-columns: 50% 50%;
+    margin-top: 2%;
+}
+
+.twoGrid>div{
+    width: 100%;
+}
+
+.twoGrid>div>input,select{
+    width: 96%;
+    padding: 1%;
+    border: 2px solid #2C3E50;
+    border-radius: 5px;
+}
+
+.threeGrid{
+    display: grid;
+    grid-template-columns: 33.33% 33.33% 33.33%;
+    margin-top: 2%;
+}
+
+.fourGrid{
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+    margin-top: 2%;
+}
+
+.fourGrid{
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+    margin-top: 2%;
+}
+
+.fourGrid>div,.threeGrid>div{
+    width: 100%;
+}
+
+.fourGrid>div>button,.threeGrid>div>button{
+    width: 91%;
+    cursor: pointer;
+    padding: 4% 0;
+}
+
+.mainsection>textarea{
+    margin-top: 3%;
+    width: 90%;
+    height: 62vh;
+    resize: none;
+    outline: none;
+    padding: 3%;
+    border: 1px solid #DDDDDD;
+}
+
+.copygrid{
+    margin-top: 2%;
+}
+
+.copygrid>input{
+    width: 73%;
+    border: 2px solid #2C3E50;
+    padding: 1%;
+    border-radius: 5px;
+}
+
+.skyBlueBtn{
+    width: 25%;
+    border: 2px solid #2C3E50;
+    background-color: #1C87EF;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 1%;
+}
+
+.twoGrid>div>input{
+    padding: 1%;
+}
+
+.twoGrid>div>button{
+    padding: 1%;
+    width: 96%;
+    cursor: pointer;
+    padding: 1%;
+}
+
+#wocasDiv,#trblshootDiv,#actionDiv{
+    margin-top: 3%;
+    width: 100%;
+}
+
+#wocasDiv>textarea,#trblshootDiv>textarea,#actionDiv>textarea{
+    width: 100%;
+    height: 10vh;
+    resize: none;
+    outline: none;
+    padding: 3%;
+}
+
+#footerDiv{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #2C3E50;
+    color: #fff;
+    flex: 10%;
+}
+
+#buttonDiv{
+    display: none;
+}
+
+#ticketCreation,#follow-up,#aftersales{
+    display: none;
+}
+
+#showDiv{
+    position: absolute;
+    background-color: rgba(80, 80, 80,.5);
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.resultDiv{
+    display: flex;
+    flex-direction: column;
+    width: 35%;
+    height: 28vh;
+    border: 2px solid #2C3E50;
+    background-color: #ECEDEF;
+}
+
+.resultDiv>div:nth-child(1){
+    background-color:  #2C3E50;
+    color: #CCCCCC;
+    flex: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.resultDiv>div:nth-child(2){
+    flex: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.resultDiv>div:nth-child(2)>textarea{
+    width: 75%;
+    height: 13vh;
+    resize: none;
+    outline: none;
+    padding: .5rem;
+}
+
+.resultDiv>div:nth-child(3){
+    flex: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#showDiv{
+    display: none;
+}
+
+#cepBTNDiv{
+    position: relative;
+}
+
+#cepBTNoptDiv{
+    height: 16vh;
+    width: 90%;
+    bottom: 100%;
+    left: 0;
+    z-index: 1;
+    background-color: transparent;
+    position: absolute;
+}
+
+#cepBTNoptDiv>button{
+    margin: .3rem 0;
+    width: 100%;
+    height: 6vh;
+    border: 2px solid #2C3E50;
+    background-color: #1C87EF;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.toogleoff{
+    display: none;
+}
