@@ -326,3 +326,37 @@ closeBTN.forEach((e)=>
 )
 
 
+let resetBtn = document.getElementById("resetBtn");
+
+resetBtn.addEventListener("click", resetForm);
+
+function resetForm() {
+    document.querySelectorAll("input, textarea").forEach(el => {
+        el.value = "";
+    });
+
+    document.querySelectorAll("select").forEach(el => {
+        el.selectedIndex = 0;
+    });
+
+    voc_inq.style.display = "none";
+    voc_ffup.style.display = "none";
+    voc_comp.style.display = "none";
+    voc_aftersales.style.display = "none";
+    voc_others.style.display = "none";
+
+
+    ticketCreation.style.display = "none";
+    follow_up.style.display = "none";
+    aftersales.style.display = "none";
+
+    buttonDiv.style.display = "none";
+
+    showDiv.style.display = "none";
+    resultDivABCA.style.display = "none";
+    resultDivNote1.style.display = "none";
+    resultDivSI.style.display = "none";
+
+
+    cepBTNoptDiv.classList.add("toogleoff");
+}
