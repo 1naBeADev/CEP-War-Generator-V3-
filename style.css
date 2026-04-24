@@ -24,6 +24,28 @@
     flex: 10%;
 }
 
+#titlediv>h1{
+    display: flex;
+}
+
+#titlediv>div:nth-of-type(1){
+    flex: 50%;
+    justify-content: start;
+    align-self: center;
+}
+
+#titlediv>div:nth-of-type(1)>h1{
+    margin-left: 3%;
+    color: #fff;
+}
+
+#titlediv>div:nth-of-type(2)>img{
+    padding-right: 10%;
+    flex: 50%;
+    width: 10vw;
+    height: 100%;
+}
+
 .mainsection{
     display: flex;
     justify-content: center;
@@ -33,11 +55,6 @@
 
 .mainsection>div{
     width: 95%;
-}
-
-#titlediv>h1{
-    margin-left: 5%;
-    color: #fff;
 }
 
 .titleSection{
@@ -113,6 +130,7 @@ div.mdDivs:first-of-type{
     border: 2px solid #2C3E50;
     border-radius: 5px;
 }
+
 
 .threeGrid{
     display: grid;
@@ -295,4 +313,8 @@ div.mdDivs:first-of-type{
 
 .toogleoff{
     display: none;
+}
+
+.concern{
+    width: 100%;
 }
