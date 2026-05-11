@@ -128,6 +128,7 @@ vocD_comp.addEventListener("change", ()=>{
     "No Internet Connection",
     "Bridge Mode Configuration",
     "CGNAT Deactivation/Activation",
+    "Full Modem Access Request",
     "LAN Port Activation",
     "Port Forwarding",
     "Selective Browsing",
@@ -198,6 +199,34 @@ vocD_comp.addEventListener("change", ()=>{
 
         icDiv[3].style.display = "block";
     }
+
+    else if(vocD_comp.value == "Bridge Mode Configuration"){
+        txtnode = document.createTextNode("Bridge Mode Configuration");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[4].style.display = "block";
+    }
+
+
+    else if(vocD_comp.value == "CGNAT Deactivation/Activation"){
+        txtnode = document.createTextNode("CGNAT Deactivation/Activation");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[5].style.display = "block";
+    }
+
 
 })
 
@@ -426,40 +455,71 @@ function resetForm() {
     cepBTNoptDiv.classList.add("toogleoff");
 }
 
+let copyBtns = document.querySelectorAll(".copyBtn");
+
+copyBtns.forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+
+        let inputField = btn.previousElementSibling;
+
+        navigator.clipboard.writeText(inputField.value);
+
+        btn.textContent = "Copied!";
+
+        setTimeout(() => {
+            btn.textContent = "Copy";
+        }, 1000);
+
+    });
+
+});
+
 
 
 let notepad = document.getElementById("noteppad");
 
-notepad.value = `Note 1
-Contact Channel Vendor: Hotline - CND
-SFDC Case Number:
-Contact Name:
-Contact Email:
-Working Permit:
-Availability Date and Time:
-Clearview Test Result:
-Serial Number:
-ONU Light Status:
-Complaint Remarks / WOCAS:
-Action Taken:
+document.querySelectorAll("input, textarea, select").forEach(el => {
 
+    el.addEventListener("input", () => {
+
+        if (document.activeElement.id === "noteppad") return;
+
+        notepad.value = `Note 1
+Contact Channel Vendor: Hotline - CND
+SFDC Case Number: ${document.getElementById("sfdcCase")?.value || ""}
+Contact Name: ${document.getElementById("cName")?.value || ""}
+Contact Email: ${document.getElementById("cmail")?.value || ""}
+Working Permit: ${document.getElementById("wpermit")?.value || ""}
+Availability Date and Time: ${document.getElementById("adt")?.value || ""}
+Clearview Test Result: ${document.getElementById("cvResult")?.value || ""}
+Serial Number: ${document.getElementById("serial")?.value || ""}
+ONU Light Status: ${document.getElementById("lightStatus")?.value || ""}
+Complaint Remarks / WOCAS: ${document.getElementById("wocastxtarea")?.value || ""}
+Action Taken: ${document.getElementById("actionTaken")?.value || ""}
 
 Special Instructions
-Phone Number:
-Caller Name:
-Contact Name:
-Contact Number:
-Contact Email:
-Working Permit:
-Availability Date and Time:
-
+Phone Number: ${document.getElementById("phone")?.value || ""}
+Caller Name: ${document.getElementById("callerName")?.value || ""}
+Contact Name: ${document.getElementById("cName")?.value || ""}
+Contact Number: ${document.getElementById("cnum")?.value || ""}
+Contact Email: ${document.getElementById("cmail")?.value || ""}
+Working Permit: ${document.getElementById("wpermit")?.value || ""}
+Availability Date and Time: ${document.getElementById("adt")?.value || ""}
 
 ABCA
-Ani:
-Billin:
-Concern:
-Action Taken:
-`
+Ani: ${document.getElementById("ani")?.value || ""}
+Billing: ${document.getElementById("account")?.value || ""}
+Concern: ${getIfVisible()}
+Action Taken: ${document.getElementById("actionTaken")?.value || ""}
+`;
+    });
+
+});
+
+
+
 
 
 
