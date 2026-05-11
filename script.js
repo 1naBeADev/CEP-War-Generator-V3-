@@ -113,6 +113,16 @@ vocD_inq.addEventListener("change", ()=>{
 
 vocD_comp.addEventListener("change", ()=>{
 
+    let comp_guidTtl = document.getElementById("comp_guidTtl");
+    let txtnode = "";
+    let icDiv = document.querySelectorAll(".icDiv");
+
+    comp_guidTtl.textContent = "";
+
+    icDiv.forEach(div => {
+        div.style.display = "none";
+    })
+
     const validComplaints = [
     "No Internet Connection and Dialtone",
     "No Internet Connection",
@@ -130,10 +140,65 @@ vocD_comp.addEventListener("change", ()=>{
     if(validComplaints.includes(vocD_comp.value)){
         ticketCreation.style.display = "block";
         buttonDiv.style.display = "grid";
+
     }else{
         ticketCreation.style.display = "none";
          buttonDiv.style.display = "none";
     }
+
+    if(vocD_comp.value == "No Internet Connection and Dialtone"){
+        txtnode = document.createTextNode("Voice and Data problem");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[0].style.display = "block";
+
+    }
+    
+    else if(vocD_comp.value == "No Internet Connection"){
+        txtnode = document.createTextNode("No Internet Connection");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[1].style.display = "block";
+
+    }
+    
+    else if(vocD_comp.value == "No Dial Tone"){
+        txtnode = document.createTextNode("No Dialtone");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[2].style.display = "block";
+    }
+
+    else if(vocD_comp.value == "Cannot Make Call"){
+        txtnode = document.createTextNode("Cannot Make Call");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[3].style.display = "block";
+    }
+
 })
 
 vocD_ffup.addEventListener("change", ()=>{
@@ -360,3 +425,43 @@ function resetForm() {
 
     cepBTNoptDiv.classList.add("toogleoff");
 }
+
+
+
+let notepad = document.getElementById("noteppad");
+
+notepad.value = `Note 1
+Contact Channel Vendor: Hotline - CND
+SFDC Case Number:
+Contact Name:
+Contact Email:
+Working Permit:
+Availability Date and Time:
+Clearview Test Result:
+Serial Number:
+ONU Light Status:
+Complaint Remarks / WOCAS:
+Action Taken:
+
+
+Special Instructions
+Phone Number:
+Caller Name:
+Contact Name:
+Contact Number:
+Contact Email:
+Working Permit:
+Availability Date and Time:
+
+
+ABCA
+Ani:
+Billin:
+Concern:
+Action Taken:
+`
+
+
+
+
+
