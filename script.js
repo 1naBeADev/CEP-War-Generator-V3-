@@ -227,6 +227,19 @@ vocD_comp.addEventListener("change", ()=>{
         icDiv[5].style.display = "block";
     }
 
+    else if(vocD_comp.value == "Full Modem Access Request"){
+        txtnode = document.createTextNode("Full Modem Access Request");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[6].style.display = "block";
+    }
+
 
 })
 
