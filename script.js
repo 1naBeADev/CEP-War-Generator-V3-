@@ -84,6 +84,17 @@ concernType.addEventListener("change",()=>{
 
 vocD_inq.addEventListener("change", ()=>{
 
+
+    let comp_guidTtl = document.getElementById("comp_guidTtl");
+    let txtnode = "";
+    let icDiv = document.querySelectorAll(".icDiv");
+
+    comp_guidTtl.textContent = "";
+
+    icDiv.forEach(div => {
+        div.style.display = "none";
+    })
+
     const inqs = [
     "Account Inquiry",
     "Billing Inquiry",
@@ -107,8 +118,62 @@ vocD_inq.addEventListener("change", ()=>{
     if(inqs.includes(vocD_inq.value)){
         buttonDiv.style.display = "grid";
     }else{
-         buttonDiv.style.display = "none";
+        buttonDiv.style.display = "none";
     }
+
+    if(vocD_inq.value == "Permanent Disconnection"){
+        txtnode = document.createTextNode("Permanent Disconnection");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[10].style.display = "block";
+
+    }
+
+    if(vocD_inq.value == "Reconnection From PD"){
+        txtnode = document.createTextNode("Reconnection From PD");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[11].style.display = "block";
+
+    }
+
+
+    if(vocD_inq.value == "Reconnection From TD"){
+        txtnode = document.createTextNode("Reconnection From TD");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[12].style.display = "block";
+
+    }
+
+    if(vocD_inq.value == "Rerouting Request"){
+        txtnode = document.createTextNode("Rerouting Request");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[13].style.display = "block";
+
+    }
+
 })
 
 vocD_comp.addEventListener("change", ()=>{
@@ -239,6 +304,46 @@ vocD_comp.addEventListener("change", ()=>{
 
         icDiv[6].style.display = "block";
     }
+
+    else if(vocD_comp.value == "LAN Port Activation"){
+        txtnode = document.createTextNode("LAN Port Activation");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[7].style.display = "block";
+    }
+
+    else if(vocD_comp.value == "Port Forwarding"){
+        txtnode = document.createTextNode("Port Forwarding");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[8].style.display = "block";
+    }
+
+     else if(vocD_comp.value == "Selective Browsing"){
+        txtnode = document.createTextNode("Selective Browsing");
+
+        comp_guidTtl.appendChild(txtnode);
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        })
+
+        icDiv[9].style.display = "block";
+    }
+
 
 
 })
@@ -499,7 +604,16 @@ document.querySelectorAll("input, textarea, select").forEach(el => {
 
         if (document.activeElement.id === "noteppad") return;
 
-        notepad.value = `Note 1
+        let concernTypeValue = document.getElementById("concernType").value;
+
+        let abca = `ABCA
+Ani: ${document.getElementById("ani")?.value || ""}
+Billing: ${document.getElementById("account")?.value || ""}
+Concern: ${getIfVisible()}
+Action Taken: ${document.getElementById("actionTaken")?.value || ""}
+        `;
+
+        let note1 = `Note 1
 Contact Channel Vendor: Hotline - CND
 SFDC Case Number: ${document.getElementById("sfdcCase")?.value || ""}
 Contact Name: ${document.getElementById("cName")?.value || ""}
@@ -511,8 +625,9 @@ Serial Number: ${document.getElementById("serial")?.value || ""}
 ONU Light Status: ${document.getElementById("lightStatus")?.value || ""}
 Complaint Remarks / WOCAS: ${document.getElementById("wocastxtarea")?.value || ""}
 Action Taken: ${document.getElementById("actionTaken")?.value || ""}
+        `;
 
-Special Instructions
+        let specialInstructions = `Special Instructions
 Phone Number: ${document.getElementById("phone")?.value || ""}
 Caller Name: ${document.getElementById("callerName")?.value || ""}
 Contact Name: ${document.getElementById("cName")?.value || ""}
@@ -520,13 +635,28 @@ Contact Number: ${document.getElementById("cnum")?.value || ""}
 Contact Email: ${document.getElementById("cmail")?.value || ""}
 Working Permit: ${document.getElementById("wpermit")?.value || ""}
 Availability Date and Time: ${document.getElementById("adt")?.value || ""}
+        `;
 
-ABCA
-Ani: ${document.getElementById("ani")?.value || ""}
-Billing: ${document.getElementById("account")?.value || ""}
-Concern: ${getIfVisible()}
-Action Taken: ${document.getElementById("actionTaken")?.value || ""}
-`;
+        if (concernTypeValue === "Inquiry" || concernTypeValue === "Follow-up"  || concernTypeValue === "Inquiry" ) {
+
+            notepad.value = abca;
+
+        } else if (concernTypeValue === "Complaint") {
+
+            // Show everything
+            notepad.value = `${note1}
+
+        ${specialInstructions}
+
+        ${abca}`;
+
+        } 
+        
+        else {
+
+            // Default
+            notepad.value = abca;
+        }
     });
 
 });
