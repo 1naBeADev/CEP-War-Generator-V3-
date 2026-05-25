@@ -405,18 +405,57 @@ vocD_aftersales.addEventListener("change", ()=>{
 
 vocD_others.addEventListener("change", ()=>{
 
+    let comp_guidTtl = document.getElementById("comp_guidTtl");
+    let icDiv = document.querySelectorAll(".icDiv");
+
+    comp_guidTtl.textContent = "";
+
+    icDiv.forEach(div=>{
+        div.style.display = "none";
+    });
+
     const others = [
-    "Home Concern",
-    "Smart Concern"
-];
+        "Home Concern",
+        "Smart Concern"
+    ];
 
     if(others.includes(vocD_others.value)){
         buttonDiv.style.display = "grid";
     }else{
         buttonDiv.style.display = "none";
     }
-})
 
+    if(vocD_others.value == "Home Concern"){
+
+        txtnode = document.createTextNode("Home Concern");
+
+        comp_guidTtl.appendChild(txtnode);
+
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        });
+
+        icDiv[14].style.display = "block";
+    }
+
+    if(vocD_others.value == "Smart Concern"){
+
+        txtnode = document.createTextNode("Smart Concern");
+
+        comp_guidTtl.appendChild(txtnode);
+
+        console.log(comp_guidTtl);
+
+        icDiv.forEach(div => {
+            div.style.display = "none";
+        });
+
+        icDiv[15].style.display = "block";
+    }
+
+})
 
 
 
