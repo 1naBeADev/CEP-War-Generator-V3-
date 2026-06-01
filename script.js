@@ -702,6 +702,73 @@ Availability Date and Time: ${document.getElementById("adt")?.value || ""}
 
 
 
+// For TXT conversion
+
+document.getElementById("toTXTbtn").addEventListener("click", function () {
+
+    let content = `
+========== AGENT DETAILS ==========
+Agent Name: ${document.querySelector('input[name="aName"]').value}
+Team Lead: ${document.querySelector('input[name="teamLead"]').value}
+PLDT Username: ${document.querySelector('input[name="t_name"]').value}
+Channel: ${document.querySelector('select[name="channel"]').value}
+
+========== CASE & ACCOUNT DETAILS ==========
+ANI: ${document.getElementById("ani").value}
+Caller Name: ${document.getElementById("callerName").value}
+Account #: ${document.getElementById("account").value}
+Phone #: ${document.getElementById("phone").value}
+Concern Type: ${document.getElementById("concernType").value}
+
+WOCAS:
+${document.getElementById("wocastxtarea").value}
+
+========== TICKET CREATION ==========
+SFDC Case #: ${document.getElementById("sfdcCase")?.value || ""}
+Contact Name: ${document.getElementById("cName")?.value || ""}
+Contact Number: ${document.getElementById("cnum")?.value || ""}
+Contact Email: ${document.getElementById("cmail")?.value || ""}
+Working Permit: ${document.getElementById("wpermit")?.value || ""}
+Available Date & Time: ${document.getElementById("adt")?.value || ""}
+CV Test Result: ${document.getElementById("cvResult")?.value || ""}
+ONU Serial Number: ${document.getElementById("serial")?.value || ""}
+ONU Light Status: ${document.getElementById("lightStatus")?.value || ""}
+
+Action Taken:
+${document.getElementById("actionTaken")?.value || ""}
+
+========== NOTEPAD ==========
+${document.getElementById("noteppad").value}
+
+========== GENERATED NOTES ==========
+ABCA:
+${document.getElementById("abcatxtfield").value}
+
+CEP NOTE 1:
+${document.getElementById("cepnote1txtfield").value}
+
+SPECIAL INSTRUCTIONS:
+${document.getElementById("sitxtfield").value}
+`;
+
+    const blob = new Blob([content], { type: "text/plain" });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+
+    // Creates filename like CEP_2026-05-31.txt
+    const date = new Date().toISOString().split("T")[0];
+    link.download = `CEP_${date}.txt`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(link.href);
+});
+
+
+
 
 
 
