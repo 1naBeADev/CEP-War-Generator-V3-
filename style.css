@@ -133,6 +133,12 @@ div.mdDivs:first-of-type{
 
 .fourGrid{
     display: grid;
+    grid-template-columns: 20% 20% 20% 20%;
+    margin-top: 2%;
+}
+
+.fourGrid{
+    display: grid;
     grid-template-columns: 25% 25% 25% 25%;
     margin-top: 2%;
 }
