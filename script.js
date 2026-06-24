@@ -849,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (contactChannel.value === "ENT-EMAIL") {
             abcaHL.style.display = "none";
             abcaSA.style.display = "none";
-            abcaEC.style.display = "none";
+            abcaEC.style.display = "grid";
         }
     }
 
