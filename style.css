@@ -131,29 +131,17 @@ div.mdDivs:first-of-type{
     margin-top: 2%;
 }
 
-.fourGrid{
+.fiveGrid{
     display: grid;
-    grid-template-columns: 20% 20% 20% 20%;
+    grid-template-columns: 20% 20% 20% 20% 20%;
     margin-top: 2%;
 }
 
-.fourGrid{
-    display: grid;
-    grid-template-columns: 25% 25% 25% 25%;
-    margin-top: 2%;
-}
-
-.fourGrid{
-    display: grid;
-    grid-template-columns: 25% 25% 25% 25%;
-    margin-top: 2%;
-}
-
-.fourGrid>div,.threeGrid>div{
+.fiveGrid>div,.threeGrid>div{
     width: 100%;
 }
 
-.fourGrid>div>button,.threeGrid>div>button{
+.fiveGrid>div>button,.threeGrid>div>button{
     width: 91%;
     cursor: pointer;
     padding: 4% 0;

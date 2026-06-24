@@ -1,5 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {
+    getDatabase,
+    ref,
+    get,
+    push,
+    set
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
 
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
@@ -17,8 +24,6 @@ const loginBtn = document.getElementById("loginBtn");
 document.getElementById("empName").addEventListener("input", function () {
     this.value = this.value.toLowerCase();
 });
-
-
 
 loginBtn.addEventListener("click", async () => {
 
@@ -40,7 +45,8 @@ loginBtn.addEventListener("click", async () => {
 
     try {
 
-        const snapshot = await get(ref(db, "/"));
+        // Read only the employees node
+        const snapshot = await get(ref(db, "employees"));
 
         if (!snapshot.exists()) {
             alert("No employee data found.");
@@ -56,24 +62,62 @@ loginBtn.addEventListener("click", async () => {
             const user = users[key];
 
             const dbTDomain = String(user["PLDTSMART Domain"] || "")
-            .trim()
-            .toLowerCase();
-            const dbWinID = String(user["Win ID"]);
+                .trim()
+                .toLowerCase();
 
-            if (
-                dbTDomain === tDomainInput &&
-                dbWinID === winIDInput
-            ) {
-                found = true;
-                break;
-            }
+            const dbWinID = String(user["Win ID"] || "")
+                .trim();
+
+        if (
+            dbTDomain === tDomainInput &&
+            dbWinID === winIDInput
+        ) {
+            found = true;
+
+            // Save employee info for later use
+            sessionStorage.setItem(
+                "employeeName",
+                user["Employee Name"]
+            );
+
+            break;
+        }
         }
 
         if (found) {
-    // check if this is the admin account
+
+            const employeeName = sessionStorage.getItem("employeeName");
+
+            const loginRecord = {
+                employeeName: employeeName,
+                tDomain: tDomainInput,
+                winID: winIDInput,
+
+                loginDateTime: new Date().toLocaleString("en-PH", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                }),
+
+                timestamp: Date.now()
+            };
+
+            // Save to Firebase
+            const loginRef = push(ref(db, "loginHistory"));
+
+            await set(loginRef, loginRecord);
+
+            // Check if this is the admin account
             const isAdmin =
                 tDomainInput === "t-jtagores" &&
                 winIDInput === "52385305";
+
+            // Save login info for dashboard use
+            sessionStorage.setItem("winID", winIDInput);
+            sessionStorage.setItem("tDomain", tDomainInput);
 
             if (isAdmin) {
                 alert("Admin Login Successful!");
@@ -93,3 +137,8 @@ loginBtn.addEventListener("click", async () => {
     }
 
 });
+
+
+
+//save
+

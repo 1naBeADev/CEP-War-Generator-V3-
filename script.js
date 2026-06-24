@@ -1,3 +1,24 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getDatabase,
+    ref,
+    get,
+    push,
+    set
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+
+
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "autodocs-a12f0.firebaseapp.com",
+    databaseURL: "https://autodocs-a12f0-default-rtdb.firebaseio.com/",
+    projectId: "autodocs-a12f0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
 
 let concernType = document.getElementById("concernType");
 let voc_inq = document.getElementById("voc-inq");
@@ -11,9 +32,9 @@ let ticketCreation = document.getElementById("ticketCreation");
 let follow_up = document.getElementById("follow-up");
 let aftersales = document.getElementById("aftersales");
 
-let = resultDivABCA = document.getElementById("resultDivABCA");
-let = resultDivNote1 = document.getElementById("resultDivNote1");
-let = resultDivSI = document.getElementById("resultDivSI");
+let resultDivABCA = document.getElementById("resultDivABCA");
+let resultDivNote1 = document.getElementById("resultDivNote1");
+let resultDivSI = document.getElementById("resultDivSI");
 
 let CEPbtn = document.getElementById("CEPbtn");
 let cepBTNoptDiv = document.getElementById("cepBTNoptDiv");
@@ -637,6 +658,7 @@ copyBtns.forEach(btn => {
 
 
 let notepad = document.getElementById("noteppad");
+const contactChannel = document.getElementById("contactChannel");
 
 document.querySelectorAll("input, textarea, select").forEach(el => {
 
@@ -646,12 +668,46 @@ document.querySelectorAll("input, textarea, select").forEach(el => {
 
         let concernTypeValue = document.getElementById("concernType").value;
 
-        let abca = `ABCA
-Ani: ${document.getElementById("ani")?.value || ""}
-Billing: ${document.getElementById("account")?.value || ""}
+        let abca = "";
+
+if (contactChannel.value === "ENT-HOTLINE") {
+
+    abca = `ABCA
+ANI: ${document.getElementById("ani")?.value || ""}
+Caller Name: ${document.getElementById("callerName")?.value || ""}
+Billing Account #: ${document.getElementById("account")?.value || ""}
+Phone #: ${document.getElementById("phone")?.value || ""}
 Concern: ${getIfVisible()}
 Action Taken: ${document.getElementById("actionTaken")?.value || ""}
-        `;
+    `;
+}
+
+else if (contactChannel.value === "ENT-SANA ALL") {
+
+    abca = `ABCA
+RITM Number: ${document.getElementById("ritm")?.value || ""}
+Received thru Sana All Dated: ${document.getElementById("saDated")?.value || ""}
+Customer Account #: ${document.getElementById("ecCaAcccount")?.value || ""}
+Billing Account #: ${document.getElementById("saBaAccount")?.value || ""}
+Account Name: ${document.getElementById("ecAccName")?.value || ""}
+Service ID: ${document.getElementById("saServiceID")?.value || ""}
+Concern: ${getIfVisible()}
+Action Taken: ${document.getElementById("actionTaken")?.value || ""}
+    `;
+}
+
+else if (contactChannel.value === "ENT-EMAIL") {
+
+    abca = `ABCA
+Received thru Enterprise Care Mailbox Dated: ${document.getElementById("ecDated")?.value || ""}
+Customer Account #: ${document.getElementById("EcCaAcccount")?.value || ""}
+Billing Account #: ${document.getElementById("ecBaAccount")?.value || ""}
+Account Name: ${document.getElementById("ecAccName")?.value || ""}
+Service ID: ${document.getElementById("ecServiceID")?.value || ""}
+Concern: ${getIfVisible()}
+Action Taken: ${document.getElementById("actionTaken")?.value || ""}
+    `;
+}
 
         let note1 = `Note 1
 Contact Channel Vendor: ${document.getElementById("contactChannel")?.value || ""}
@@ -767,6 +823,140 @@ ${document.getElementById("sitxtfield").value}
 
     URL.revokeObjectURL(link.href);
 });
+
+
+
+
+//Fields Update script
+document.addEventListener("DOMContentLoaded", () => {
+
+    let contactChannel = document.getElementById("contactChannel");
+    let abcaHL = document.getElementById("abcaHL");
+    let abcaSA = document.getElementById("abcaSA");
+    let abcaEC = document.getElementById("abcaEC");
+
+    function toggleOriginFields() {
+        if (contactChannel.value === "ENT-HOTLINE") {
+            abcaHL.style.display = "grid";
+            abcaSA.style.display = "none";
+            abcaEC.style.display = "none";
+        }
+        else if (contactChannel.value === "ENT-SANA ALL") {
+            abcaHL.style.display = "none";
+            abcaSA.style.display = "grid";
+            abcaEC.style.display = "grid";
+        }
+        else if (contactChannel.value === "ENT-EMAIL") {
+            abcaHL.style.display = "none";
+            abcaSA.style.display = "none";
+            abcaEC.style.display = "none";
+        }
+    }
+
+    toggleOriginFields();
+    contactChannel.addEventListener("change", toggleOriginFields);
+
+});
+
+
+
+//ABCCA save function
+
+
+
+const saveBtn = document.getElementById("saveBtn");
+
+saveBtn.addEventListener("click", async () => {
+
+    try {
+
+        const employeeName =
+            sessionStorage.getItem("employeeName");
+
+        const winID =
+            sessionStorage.getItem("winID");
+
+        const tDomain =
+            sessionStorage.getItem("tDomain");
+
+        const channel =
+            document.getElementById("contactChannel").value;
+
+        const abcaGenerated =
+            document.getElementById("abcatxtfield").value;
+
+        let caseDetails = {};
+
+        // ENT-HOTLINE
+        if (channel === "ENT-HOTLINE") {
+
+            caseDetails = {
+                ani: document.getElementById("ani").value,
+                callerName: document.getElementById("callerName").value,
+                account: document.getElementById("account").value,
+                phone: document.getElementById("phone").value
+            };
+        }
+
+        // ENT-SANA ALL
+        else if (channel === "ENT-SANA ALL") {
+
+            caseDetails = {
+                ritm: document.getElementById("ritm").value,
+                saDated: document.getElementById("saDated").value,
+                ecCaAcccount: document.getElementById("ecCaAcccount").value,
+                saBaAccount: document.getElementById("saBaAccount").value,
+                ecAccName: document.getElementById("ecAccName").value,
+                saServiceID: document.getElementById("saServiceID").value
+            };
+        }
+
+        // ENT-EMAIL
+        else if (channel === "ENT-EMAIL") {
+
+            caseDetails = {
+                ecDated: document.getElementById("ecDated").value,
+                EcCaAcccount: document.getElementById("EcCaAcccount").value,
+                ecBaAccount: document.getElementById("ecBaAccount").value,
+                ecAccName: document.getElementById("ecAccName").value,
+                ecServiceID: document.getElementById("ecServiceID").value
+            };
+        }
+
+        const saveData = {
+            employeeName,
+            winID,
+            tDomain,
+
+            channel,
+
+            savedAt: new Date().toISOString(),
+
+            abcaGenerated,
+
+            caseDetails
+        };
+
+        const noteRef = push(ref(db, "savedNotes"));
+
+        await set(noteRef, saveData);
+
+        alert("ABCA saved successfully!");
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Failed to save ABCA.");
+    }
+
+});
+
+
+
+
+
+
+
 
 
 
