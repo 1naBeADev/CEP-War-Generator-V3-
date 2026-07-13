@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standard Notes Generator Suite</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Shift Check-In Overlay -->
+  <div class="login-reminder-overlay" id="loginReminderScreen">
+    <div class="login-reminder-container">
+      <div class="reminder-icon-shield">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <h2>Agent Shift Check-In</h2>
+      <p>Welcome back! Let's ensure a smooth workflow today. Please review your tracking workspace to process outstanding items or view logged system blockers.</p>
+      
+      <ul class="reminder-checklist">
+        <li><span class="dot-inc">📅</span> Action pending client follow-ups.</li>
+        <li><span class="dot-inc">⚠️</span> Review and retry logged ticket system errors.</li>
+      </ul>
+
+      <button class="btn-reminder-acknowledge" id="dismissReminderBtn">
+        Got it, View Tracker <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Meta Tracker Floating Orb -->
+  <div id="metaTrackerOrb" class="meta-orb-trigger rgb-mode" title="Toggle Monitoring Case Tracker" 
+     style="position: fixed; bottom: 20px; right: 20px; z-index: 999999; cursor: grab;">
+    
+    <i class="fas fa-folder-open meta-orb-icon" style="transition: transform 0.2s ease, color 0.2s ease;"></i>
+    <span id="metaOrbBadgeCount" class="meta-orb-badge">0</span>
+
+    <div id="messengerNotificationBubble" style="display: none; pointer-events: auto; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #ef4444; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.5); padding: 12px 16px; border-radius: 18px 18px 4px 18px; width: 280px; color: #fff; position: absolute !important; font-family: inherit;">
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="orb-pulse-animation">
+          <i class="fas fa-exclamation-triangle" style="font-size: 13px;"></i>
+        </div>
+        <div style="flex: 1;">
+          <h5 style="margin: 0 0 3px 0; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: #ef4444; text-transform: uppercase;">Priority Alert</h5>
+          <p id="messengerNotificationText" style="margin: 0; font-size: 11px; line-height: 1.4; color: #cbd5e1; font-weight: 500;">Hey there! A priority case has expired and needs immediate checking.</p>
+        </div>
+      </div>
+      <div style="text-align: right; margin-top: 8px; font-size: 9px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">
+        Click bubble to view drawer • Tap to dismiss
+      </div>
+    </div>
+  </div>
+
+  <!-- Meta Tracker Drawer Layout Panel -->
+  <div id="metaTrackerDrawer">
+    <div class="glass-drawer-header">
+      <h3><i class="fas fa-satellite-dish animate-pulse"></i> Priority Case Monitor</h3>
+      <button id="closeMetaDrawerBtn" class="btn-close-modal">&times;</button>
+    </div>
+    <p class="glass-drawer-desc">Active timers sync across workstations. Alerts prompt on screen upon reaching zero.</p>
+    
+    <div id="metaTrackerQueueBox" class="tracker-scroll-area">
+      <div id="resultDivABCA" class="micro-tracker-card">
+          <div class="banner-track-label">ABCA</div>
+          <textarea id="abcatxtfield" style="width: 100%; height: 60px; margin-top: 5px;"></textarea>
+      </div>
+      <div id="resultDivNote1" class="micro-tracker-card">
+          <div class="banner-track-label">CEP NOTE 1</div>
+          <textarea id="cepnote1txtfield" style="width: 100%; height: 60px; margin-top: 5px;"></textarea>
+      </div>
+      <div id="resultDivSI" class="micro-tracker-card">
+          <div class="banner-track-label">SPECIAL INSTRUCTIONS</div>
+          <textarea id="sitxtfield" style="width: 100%; height: 60px; margin-top: 5px;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main System Action Header Navigation Bar -->
+  <header class="workspace-brand-header">
+    <div class="brand-identity-wrapper">
+      <div class="brand-logo-circle-large">
+        <img src="Conduent.png" alt="Conduent Logo" onerror="this.style.display='none';">
+      </div>
+      <div class="brand-logo-circle-large brand-logo-secondary">
+        <img src="PLDT.png" alt="PLDT Logo" onerror="this.style.display='none';">
+      </div>
+      <h1 class="brand-main-title">STANDARD NOTES GENERATOR</h1>
+    </div>
+
+    <div class="header-control-actions">
+      <div class="brand-system-status">
+        <span class="status-pulse-dot"></span>
+        <span class="status-text-label">Active</span>
+      </div>
+
+      <button type="button" id="themeToggle" class="header-action-btn" title="Toggle Dark / Light Mode">
+        <i class="fas fa-moon"></i>
+      </button>
+
+      <div class="theme-picker-wrapper" id="colorSwatchTrigger" title="Personalize Accent Accent Theme">
+        <label for="agentThemePicker" class="theme-picker-label">
+          <i class="fas fa-palette"></i>
+        </label>
+        <input type="color" id="agentThemePicker" class="agent-color-input" value="#2563eb">
+      </div>
+    </div>
+  </header>
+
+  <!-- 3-Column Split Platform Body Layout Matrix -->
+  <main class="layout">
+    
+    <!-- Column 1: Core Form Parameters Fields UI Pane -->
+    <section class="inputPanel">
+      <div class="panel-header">
+        <h3><i class="fas fa-edit"></i> Documentation Fields Engine</h3>
+      </div>
+
+      <!-- Agent Profile Meta Form Rows -->
+      <div class="form-group">
+        <div class="form-grid">
+          <div>
+            <label>Agent Name*</label>
+            <input type="text" name="aName">
+          </div>
+          <div>
+            <label>Team Lead*</label>
+            <input type="text" name="teamLead">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-grid">
+          <div>
+            <label>PLDT Username*</label>
+            <input type="text" name="t_name">
+          </div>
+          <div>
+            <label>Channel*</label>
+            <select name="channel" id="contactChannel">
+              <option value="ENT-HOTLINE">ENT-HOTLINE</option>
+              <option value="ENT-SANA ALL">ENT-SANA ALL</option>
+              <option value="ENT-EMAIL">ENT-EMAIL</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:0; border-top: 1px solid var(--border-color); margin:12px 0;">
+
+      <!-- Case Infrastructure Management Input Clusters -->
+      <div id="abcaHL" class="form-group">
+        <div class="form-grid">
+          <div>
+            <label>Ani</label>
+            <input type="number" name="ani" id="ani">
+          </div>
+          <div>
+            <label>Caller Name</label>
+            <input type="text" name="callerName" id="callerName">
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top: 8px;">
+          <div>
+            <label>Account#</label>
+            <input type="text" name="account" id="account">
+          </div>
+          <div>
+            <label>Phone#</label>
+            <input type="text" name="phone" id="phone">
+          </div>
+        </div>
+      </div>
+
+      <div id="abcaSA" class="form-group" style="display:none;">
+        <div class="form-grid">
+          <div>
+            <label>RITM Number</label>
+            <input type="number" name="ritm" id="ritm">
+          </div>
+          <div>
+            <label>Received thru Sana All Dated</label>
+            <input type="text" name="saDated" id="saDated">
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top: 8px;">
+          <div>
+            <label>Customer Account#</label>
+            <input type="text" name="ecCaAcccount" id="ecCaAcccount">
+          </div>
+          <div>
+            <label>Billing Account#</label>
+            <input type="text" name="saBaAccount" id="saBaAccount">
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top: 8px;">
+          <div>
+            <label>Account Name</label>
+            <input type="text" name="ecAccName" id="ecAccName">
+          </div>
+          <div>
+            <label>Service ID</label>
+            <input type="text" name="saServiceID" id="saServiceID">
+          </div>
+        </div>
+      </div>
+
+      <div id="abcaEC" class="form-group" style="display:none;">
+        <div class="form-group">
+          <label>Received thru Enterprise Care Mailbox Dated</label>
+          <input type="text" name="ecDated" id="ecDated">
+        </div>
+        <div class="form-grid">
+          <div>
+            <label>Customer Account#</label>
+            <input type="text" name="EcCaAcccount" id="EcCaAcccount">
+          </div>
+          <div>
+            <label>Billing Account#</label>
+            <input type="text" name="ecBaAccount" id="ecBaAccount">
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top: 8px;">
+          <div>
+            <label>Account Name</label>
+            <input type="text" name="ecAccName" id="ecAccName">
+          </div>
+          <div>
+            <label>Service ID</label>
+            <input type="text" name="ecServiceID" id="ecServiceID">
+          </div>
+        </div>
+      </div>
+
+      <!-- Concern and Strategy Tree Matrix Injections Dropdowns -->
+      <div class="form-group">
+        <div class="form-grid">
+          <div>
+            <label>Concern Type*</label>
+            <select name="concernType" id="concernType">
+              <option value=""></option>
+              <option value="Inquiry">Inquiry</option>
+              <option value="Complaint">Complaint</option>
+              <option value="Follow-up">Follow-up</option>
+              <option value="Aftersales">Aftersales</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+
+          <div>
+            <div id="voc-inq" style="display:none;">
+              <label>VOC*</label>
+              <select name="vocD_inq" id="vocD_inq" class="concern">
+                <option value=""></option>
+                <optgroup label="Aftersales">
+                  <option value="Account Inquiry">Account Inquiry</option>
+                  <option value="Permanent Disconnection">Permanent Disconnection</option>
+                  <option value="Reconnection From PD">Reconnection From PD</option>
+                  <option value="Reconnection From TD">Reconnection From TD</option>
+                  <option value="Rerouting Request">Rerouting Request</option>
+                  <option value="Relocation Request">Relocation Request</option>
+                  <option value="Upgrade Request">Upgrade Request</option>
+                  <option value="Resume VTD">Resume VTD (VTD)</option>
+                  <option value="VTD">Voluntary Temporary Disconnection</option>
+                  <option value="​Change Number">​Change Number</option>
+                </optgroup>
+                <optgroup label="Billing">
+                  <option value="Billing Inquiry">Billing Inquiry</option>
+                  <option value="Unposted Payment">Unposted Payment</option>
+                  <option value="Copy of Bill">Copy of Bill</option>
+                  <option value="BOL/e Enrollment">BOL/e Enrollment</option>
+                  <option value="Service Rebate">Service Rebate</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div id="voc-ffup" style="display:none;">
+              <label>VOC*</label>
+              <select name="vocD_ffup" id="vocD_ffup" class="concern">
+                <option value=""></option>
+                <optgroup label="Technical">
+                  <option value="Follow up Voice and Data Problem">Voice and Data Problem</option>
+                  <option value="Follow up No internet Connection">No internet Connection</option>
+                  <option value="Follow up Slow browsing">Slow browsing</option>
+                  <option value="Follow up Intermittent Connection">Intermittent Connection</option>
+                  <option value="Follow up No Dialtone">No Dialtone</option>
+                  <option value="Follow up Cannot make_receive call">Cannot make_receive call</option>
+                </optgroup>
+                <optgroup label="Aftersales">
+                  <option value="Follow up Relocation Request">Relocation Request</option>
+                  <option value="Follow up Upgrade Request">Upgrade Request</option>
+                  <option value="Follow up Reconnection from TD">Reconnection from TD</option>
+                  <option value="Follow up Reconnection from PD">Reconnection from PD</option>
+                  <option value="Follow up New Connect">New Connect</option>
+                  <option value="Follow up Rerouting">Rerouting</option>
+                  <option value="Follow up Change Number">Change Number</option>
+                </optgroup>
+                <optgroup label="Billing">
+                  <option value="Follow up Unposted Payment">Unposted Payment</option>
+                  <option value="Follow up Copy of Bill">Copy of Bill</option>
+                  <option value="Follow up BOL/e Enrollment">BOL/e Enrollment</option>
+                  <option value="Follow up Service Rebate">Service Rebate</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div id="voc-comp" style="display:none;">
+              <label>VOC*</label>
+              <select name="vocD_comp" id="vocD_comp" class="concern">
+                <option value=""></option>
+                <optgroup label="Voice and Data">
+                  <option value="No Internet Connection and Dialtone">No Internet Connection and Dialtone</option>
+                </optgroup>
+                <optgroup label="Date">
+                  <option value="No Internet Connection">No Internet Connection</option>
+                  <option value="Bridge Mode Configuration">Bridge Mode Configuration</option>
+                  <option value="CGNAT Deactivation/Activation">CGNAT Deactivation/Activation</option>
+                  <option value="Full Modem Access Request">Full Modem Access Request</option>
+                  <option value="LAN Port Activation">LAN Port Activation</option>
+                  <option value="Port Forwarding">Port Forwarding</option>
+                  <option value="Selective Browsing">Selective Browsing</option>
+                </optgroup>
+                <optgroup label="Voice">
+                  <option value="No Dial Tone">No Dial Tone</option>
+                  <option value="Cannot Make Call">Cannot Make Call</option>
+                  <option value="Cannot Receive Call">Cannot Receive Call</option>
+                  <option value="Cannot Make and Receive Call">Cannot Make and Receive Call</option>
+                </optgroup>
+                <optgroup label="Complex">
+                  <option value="No Internet Connection(Complex)">No Internet Connection(Complex)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div id="voc-aftersales" style="display:none;">
+              <label>VOC*</label>
+              <select name="vocD_aftersales" id="vocD_aftersales" class="concern">
+                <option value=""></option>
+                <optgroup label="Aftersales">
+                  <option value="Change Number">Change Number</option>
+                  <option value="Permanent Disconnection">Permanent Disconnection</option>
+                  <option value="Reconnection from OP">Reconnection from OP</option>
+                  <option value="Reconnection from PD">Reconnection from PD</option>
+                  <option value="Rerouting Request">Rerouting Request</option>
+                  <option value="Relocation Request">Relocation Request</option>
+                  <option value="Resume VTD">Resume VTD</option>
+                  <option value="Upgrade Request">Upgrade Request</option>
+                  <option value="Voluntary VTD">Voluntary VTD</option>
+                  <option value="Downgrade Request">Downgrade Request</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div id="voc-others" style="display:none;">
+              <label>VOC*</label>
+              <select name="vocD_others" id="vocD_others" class="concern">
+                <option value=""></option>
+                <optgroup label="Others">
+                  <option value="Home Concern">Home Concern</option>
+                  <option value="Smart Concern">Smart Concern</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>WOCAS Summary</label>
+        <textarea name="wocastxtarea" id="wocastxtarea" rows="2"></textarea>
+      </div>
+
+      <!-- Context Specific System Injections Panels -->
+      <div id="dropDownOptions">
+        <div id="ticketCreation" style="display:none;">
+          <div class="form-grid">
+            <div>
+              <label>SFDC Case Number*</label>
+              <input type="text" name="sfdcCase" id="sfdcCase">
+            </div>
+            <div>
+              <label>Contact Name*</label>
+              <input type="text" name="cName" id="cName">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 8px;">
+            <div>
+              <label>Contact Number*</label>
+              <input type="text" name="cnum" id="cnum">
+            </div>
+            <div>
+              <label>Contact Email*</label>
+              <input type="text" name="cmail" id="cmail">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 8px;">
+            <div>
+              <label>Working permit*</label>
+              <input type="text" name="wpermit" id="wpermit">
+            </div>
+            <div>
+              <label>Available Date and Time*</label>
+              <input type="text" name="adt" id="adt">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 8px;">
+            <div>
+              <label>CV Test Result*</label>
+              <input type="text" name="cvResult" id="cvResult">
+            </div>
+            <div>
+              <label>ONU Serial Number*</label>
+              <input type="text" name="serial" id="serial">
+            </div>
+          </div>
+          <!-- Added Troubleshooting field directly above ONU Light Status -->
+          <div class="form-group" style="margin-top: 8px;">
+            <label>Troubleshooting*</label>
+            <input type="text" name="troubleshooting" id="troubleshooting">
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label>ONU Light Status*</label>
+            <input type="text" name="lightStatus" id="lightStatus">
+          </div>
+          <div class="form-group">
+            <label>Action Taken</label>
+            <textarea name="actionTaken" id="actionTaken" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div id="follow-up" style="display:none;">
+          <div class="form-grid">
+            <div>
+              <label>Billing Account Number</label>
+              <input type="number" name="billNum" id="billNum">
+            </div>
+            <div>
+              <label>Ticket Number</label>
+              <input type="number" name="ticketNum" id="ticketNum">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 8px;">
+            <div>
+              <label>SFDC Case Number</label>
+              <input type="text" name="sfdcCase" id="sfdcCase">
+            </div>
+            <div>
+              <label>Service ID</label>
+              <input type="text" name="serviceID" id="serviceID">
+            </div>
+          </div>
+        </div>
+
+        <div id="aftersales" style="display:none;">
+          <div class="form-grid">
+            <div>
+              <label>Billing Account Number</label>
+              <input type="number" name="billNum" id="billNum">
+            </div>
+            <div>
+              <label>SFDC Case Number</label>
+              <input type="text" name="sfdcCase" id="sfdcCase">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label>Service ID</label>
+            <input type="text" name="serviceID" id="serviceID">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button Panel Array -->
+      <div class="buttons">
+        <button type="button" class="btn-primary" id="CEPbtn"><i class="fas fa-cog"></i> Generate CEP</button>
+        <button type="button" class="btn-secondary" id="resABCAbtn">ABCA</button>
+      </div>
+      <div class="form-grid" style="margin-top: 8px;">
+        <button type="button" class="btn-secondary" id="resetBtn" style="background-color: #64748b; color: white;"><i class="fas fa-undo"></i> Reset</button>
+        <button type="button" class="btn-primary" id="saveBtn" style="background-color: #10b981;"><i class="fas fa-save"></i> Save</button>
+      </div>
+      <div style="margin-top: 8px;">
+        <button type="button" class="btn-secondary" id="toTXTbtn" style="width:100%;"><i class="fas fa-file-alt"></i> Export TXT</button>
+      </div>
+    </section>
+
+    <!-- Column 2: Live Operational Notepad Workspace -->
+    <section class="outputPanel">
+      <div class="panel-header">
+        <h3><i class="fas fa-keyboard"></i> Operations Notepad</h3>
+      </div>
+      <div class="form-group">
+        <textarea name="noteppad" id="noteppad" style="width: 100%; min-height: 400px; font-family: monospace; resize: vertical;" placeholder="Type or view compiled records output here..."></textarea>
+      </div>
+    </section>
+
+    <!-- Column 3: Diagnostic Link Playbook / Reference Guidelines -->
+    <section class="suggestionPanel">
+      <div class="panel-header">
+        <h3><i class="fas fa-book-open"></i> KB Process Playbook</h3>
+      </div>
+      <div class="instructionContent" style="max-height: 440px; overflow-y: auto;">
+        <div class="icDiv">
+          <ul style="padding-left: 16px; font-size: 12.5px; line-height: 1.6;">
+            <li>Voice/Data Reference Link: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_EMAIL_CENTER_HOTLINE_ENTERPRISE_REPAIR_SIMPLE_SERVICE_GENUINE.aspx">Repair for Simple Services</a></li>
+            <li>War Convention: <a target="_blank" href="https://pldt365.sharepoint.com/:x:/r/sites/PLDT_LIT365/_layouts/15/Doc.aspx?sourcedoc=%7BCD2BD4A9-88C9-487B-9357-89F0BAD9DC4C%7D&file=ENTERPRISE_CEP_WAR_CONVENTION.xlsx&action=default&mobileredirect=true">CEP WAR Convention</a></li>
+            <li>CEP Case Management: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTEnterpriseLIT365/SitePages/BP_PLDT_CUSTOMER_ENGAGEMENT_PLATFORM_CASE_CREATION_AND_MANAGEMENT_FOR_IN_FLIGHTTIKCETS.aspx">CEP Case creation for In-Flight Tickets</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer style="text-align: center; margin-top: 30px; padding: 15px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-muted);">
+    Standard Notes Generator Version 5.4.080426 <br>
+    © Developed and designed by: QA Team
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
