@@ -9,47 +9,66 @@
 </head>
 <body>
 
-  <!-- Shift Check-In Overlay -->
+  <!-- Agent Login Gateway Overlay -->
   <div class="login-reminder-overlay" id="loginReminderScreen">
-    <div class="login-reminder-container">
+    <div class="login-reminder-container" style="max-width: 400px; padding: 30px;">
       <div class="reminder-icon-shield">
-        <i class="fas fa-user-check"></i>
+        <i class="fas fa-lock"></i>
       </div>
-      <h2>Agent Shift Check-In</h2>
-      <p>Welcome back! Let's ensure a smooth workflow today. Please review your tracking workspace to process outstanding items or view logged system blockers.</p>
+      <h2>Agent Gateway Terminal</h2>
+      <p style="margin-bottom: 20px;">Please authenticate to sync your workspace routing protocols.</p>
       
-      <ul class="reminder-checklist">
-        <li><span class="dot-inc">📅</span> Action pending client follow-ups.</li>
-        <li><span class="dot-inc">⚠️</span> Review and retry logged ticket system errors.</li>
-      </ul>
+      <form id="gatewayLoginForm" style="text-align: left; width: 100%;">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px; opacity: 0.9;">PLDT Enterprise ID*</label>
+          <input type="text" id="loginUsername" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: inherit;" placeholder="e.g., pldt_agent01">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px; opacity: 0.9;">Gatekeeper Token*</label>
+          <input type="password" id="loginPassword" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: inherit;" placeholder="••••••••">
+        </div>
 
-      <button class="btn-reminder-acknowledge" id="dismissReminderBtn">
-        Got it, View Tracker <i class="fas fa-chevron-right"></i>
-      </button>
+        <button type="submit" class="btn-reminder-acknowledge" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0;">
+          Initialize Session <i class="fas fa-sign-in-alt"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard Overlay Screen -->
+  <div class="login-reminder-overlay" id="adminPanelScreen" style="display: none; z-index: 99999;">
+    <div class="login-reminder-container" style="max-width: 850px; width: 90%; padding: 25px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <h2 style="margin: 0;"><i class="fas fa-user-shield"></i> Administration Management Portal</h2>
+        <button id="closeAdminBtn" style="background: transparent; border: none; font-size: 24px; color: inherit; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 13px; margin-bottom: 15px; opacity: 0.8;">Operational session metrics auditing automated script execution usage:</p>
+      
+      <div style="overflow-x: auto; max-height: 400px; border: 1px solid var(--border-color); border-radius: 6px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+          <thead>
+            <tr style="background: rgba(0,0,0,0.1); border-bottom: 2px solid var(--border-color);">
+              <th style="padding: 10px;">Agent ID</th>
+              <th style="padding: 10px;">Session Start</th>
+              <th style="padding: 10px;">Session End</th>
+              <th style="padding: 10px; text-align: center;">Auto-Docs Used?</th>
+            </tr>
+          </thead>
+          <tbody id="adminAuditLogBody">
+            <!-- Dynamic log entries populate here -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <!-- Meta Tracker Floating Orb -->
   <div id="metaTrackerOrb" class="meta-orb-trigger rgb-mode" title="Toggle Monitoring Case Tracker" 
-     style="position: fixed; bottom: 20px; right: 20px; z-index: 999999; cursor: grab;">
+     style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; cursor: grab;">
     
     <i class="fas fa-folder-open meta-orb-icon" style="transition: transform 0.2s ease, color 0.2s ease;"></i>
     <span id="metaOrbBadgeCount" class="meta-orb-badge">0</span>
-
-    <div id="messengerNotificationBubble" style="display: none; pointer-events: auto; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #ef4444; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.5); padding: 12px 16px; border-radius: 18px 18px 4px 18px; width: 280px; color: #fff; position: absolute !important; font-family: inherit;">
-      <div style="display: flex; gap: 10px; align-items: flex-start;">
-        <div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="orb-pulse-animation">
-          <i class="fas fa-exclamation-triangle" style="font-size: 13px;"></i>
-        </div>
-        <div style="flex: 1;">
-          <h5 style="margin: 0 0 3px 0; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: #ef4444; text-transform: uppercase;">Priority Alert</h5>
-          <p id="messengerNotificationText" style="margin: 0; font-size: 11px; line-height: 1.4; color: #cbd5e1; font-weight: 500;">Hey there! A priority case has expired and needs immediate checking.</p>
-        </div>
-      </div>
-      <div style="text-align: right; margin-top: 8px; font-size: 9px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">
-        Click bubble to view drawer • Tap to dismiss
-      </div>
-    </div>
   </div>
 
   <!-- Meta Tracker Drawer Layout Panel -->
@@ -94,6 +113,11 @@
         <span class="status-text-label">Active</span>
       </div>
 
+      <!-- Admin Control Interface Trigger Toggle -->
+      <button type="button" id="adminToggleBtn" class="header-action-btn" title="Open Admin Audit Logs">
+        <i class="fas fa-user-shield"></i>
+      </button>
+
       <button type="button" id="themeToggle" class="header-action-btn" title="Toggle Dark / Light Mode">
         <i class="fas fa-moon"></i>
       </button>
@@ -104,6 +128,11 @@
         </label>
         <input type="color" id="agentThemePicker" class="agent-color-input" value="#2563eb">
       </div>
+
+      <!-- Core Identity Session Terminate Handle -->
+      <button type="button" id="sessionLogoutBtn" class="header-action-btn" title="Logout Secure Session" style="color: #ef4444;">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
     </div>
   </header>
 
@@ -414,7 +443,6 @@
               <input type="text" name="serial" id="serial">
             </div>
           </div>
-          <!-- Added Troubleshooting field directly above ONU Light Status -->
           <div class="form-group" style="margin-top: 8px;">
             <label>Troubleshooting*</label>
             <input type="text" name="troubleshooting" id="troubleshooting">
@@ -487,7 +515,7 @@
     <!-- Column 2: Live Operational Notepad Workspace -->
     <section class="outputPanel">
       <div class="panel-header">
-        <h3><i class="fas fa-keyboard"></i>Notepad</h3>
+        <h3><i class="fas fa-keyboard"></i> Result Notepad</h3>
       </div>
       <div class="form-group">
         <textarea name="noteppad" id="noteppad" style="width: 100%; min-height: 400px; font-family: monospace; resize: vertical;" placeholder="Type or view compiled records output here..."></textarea>
@@ -497,7 +525,7 @@
     <!-- Column 3: Diagnostic Link Playbook / Reference Guidelines -->
     <section class="suggestionPanel">
       <div class="panel-header">
-        <h3><i class="fas fa-book-open"></i> Work flow</h3>
+        <h3><i class="fas fa-book-open"></i> LIT Guide</h3>
       </div>
       <div class="instructionContent" style="max-height: 440px; overflow-y: auto;">
         <div class="icDiv">
@@ -513,8 +541,8 @@
   </main>
 
   <footer style="text-align: center; margin-top: 30px; padding: 15px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-muted);">
-    Standard Notes Generator<br>
-    Developed and designed by: QA Team
+    Standard Notes Generator Version 5.4.080426 <br>
+    © Developed and designed by: QA Team
   </footer>
 
   <script src="script.js"></script>
