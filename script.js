@@ -351,31 +351,64 @@ document.addEventListener('DOMContentLoaded', () => {
     metaOrbBadgeCount.textContent = "0";
   });
 
-  // Save Operations Records Function
-  document.getElementById('saveBtn').addEventListener('click', () => {
-    if (!noteppad.value.trim()) {
-      alert("Workspace notepad contains no transaction record metrics to persist!");
+  // Dynamic File Blueprint Exporter
+document.getElementById('toTXTbtn').addEventListener('click', () => {
+  const inputPanel = document.querySelector('.inputPanel');
+  if (!inputPanel) return;
+
+  const formElements = inputPanel.querySelectorAll('input, select, textarea');
+  let collectedData = [];
+
+  formElements.forEach(el => {
+    // Exclude buttons, color pickers, hidden containers, or empty inputs
+    if (
+      el.type === 'button' || 
+      el.type === 'submit' || 
+      el.type === 'color' || 
+      !el.value || 
+      !el.value.toString().trim()
+    ) {
       return;
     }
-    localStorage.setItem('latestSavedNoteWorkspace', noteppad.value);
-    alert("Record workspace snapshot cached successfully!");
+
+    // Skip elements inside hidden containers
+    if (el.closest('[style*="display: none"]') || el.closest('[style*="display:none"]')) {
+      return;
+    }
+
+    let labelText = '';
+    const parent = el.parentElement;
+
+    if (parent && parent.querySelector('label')) {
+      labelText = parent.querySelector('label').textContent.replace('*', '').trim();
+    } else if (el.previousElementSibling && el.previousElementSibling.tagName === 'LABEL') {
+      labelText = el.previousElementSibling.textContent.replace('*', '').trim();
+    }
+
+    const key = labelText || el.name || el.id || 'Field';
+    collectedData.push(`${key}: ${el.value.trim()}`);
   });
 
-  // Raw File Blueprint Data Exporters
-  document.getElementById('toTXTbtn').addEventListener('click', () => {
-    const textContent = noteppad.value;
-    if (!textContent.trim()) {
-      alert("No structured content detected to trigger file build stream.");
-      return;
-    }
-    const blob = new Blob([textContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `NoteBlock_${new Date().toISOString().slice(0,10)}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  });
+  if (collectedData.length === 0) {
+    alert("No filled documentation fields detected to export.");
+    return;
+  }
+
+  const exportText = "=== DOCUMENTATION FIELD EXPORT ===\n\n" + collectedData.join('\n');
+  
+  // Display compiled output in Result Notepad
+  const noteppad = document.getElementById('noteppad');
+  if (noteppad) noteppad.value = exportText;
+
+  // Build and trigger download stream
+  const blob = new Blob([exportText], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `Documentation_Export_${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+});
 });
