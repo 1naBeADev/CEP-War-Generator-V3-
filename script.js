@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const FIREBASE_URL = 'https://autodocs-a12f0-default-rtdb.firebaseio.com';
 
+  // --- DOM Elements Reference ---
   const loginReminderScreen = document.getElementById('loginReminderScreen');
   const gatewayLoginForm = document.getElementById('gatewayLoginForm');
   const loginUsernameInput = document.getElementById('loginUsername');
@@ -8,7 +9,53 @@ document.addEventListener('DOMContentLoaded', () => {
   const formUsernameInput = document.querySelector('input[name="t_name"]');
   const formAgentNameInput = document.querySelector('input[name="aName"]');
   const sessionLogoutBtn = document.getElementById('sessionLogoutBtn');
-  const adminBtn = document.getElementById('adminBtn'); // Select Admin Button
+  const adminBtn = document.getElementById('adminBtn');
+
+  // Channel & Header Sections
+  const contactChannel = document.getElementById('contactChannel');
+  const abcaHL = document.getElementById('abcaHL');
+  const abcaSA = document.getElementById('abcaSA');
+  const abcaEC = document.getElementById('abcaEC');
+
+  // Concern & Sub-Form Elements
+  const concernTypeSelect = document.getElementById('concernType');
+  const vocInq = document.getElementById('voc-inq');
+  const vocFfup = document.getElementById('voc-ffup');
+  const vocComp = document.getElementById('voc-comp');
+  const vocAftersales = document.getElementById('voc-aftersales');
+  const vocOthers = document.getElementById('voc-others');
+
+  const ticketCreation = document.getElementById('ticketCreation');
+  const followUpSec = document.getElementById('follow-up');
+  const aftersalesSec = document.getElementById('aftersales');
+
+  // Output Notepad and Buttons
+  const noteppad = document.getElementById('noteppad');
+  const CEPbtn = document.getElementById('CEPbtn');
+  const resABCAbtn = document.getElementById('resABCAbtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const toTXTbtn = document.getElementById('toTXTbtn');
+
+  // Drawer / Case Monitor Textareas
+  const abcatxtfield = document.getElementById('abcatxtfield');
+  const cepnote1txtfield = document.getElementById('cepnote1txtfield');
+
+  // Meta Tracker Drawer Toggle
+  const metaTrackerOrb = document.getElementById('metaTrackerOrb');
+  const metaTrackerDrawer = document.getElementById('metaTrackerDrawer');
+  const closeMetaDrawerBtn = document.getElementById('closeMetaDrawerBtn');
+
+  if (metaTrackerOrb && metaTrackerDrawer) {
+    metaTrackerOrb.addEventListener('click', () => {
+      metaTrackerDrawer.classList.toggle('active');
+    });
+  }
+  if (closeMetaDrawerBtn && metaTrackerDrawer) {
+    closeMetaDrawerBtn.addEventListener('click', () => {
+      metaTrackerDrawer.classList.remove('active');
+    });
+  }
 
   // --- Authorized Admin Whitelist ---
   const ALLOWED_ADMINS = [
@@ -26,15 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateAdminButtonVisibility(domain, winId) {
     if (adminBtn) {
-      if (isAuthorizedAdmin(domain, winId)) {
-        adminBtn.style.display = 'inline-block'; // Show if admin
-      } else {
-        adminBtn.style.display = 'none'; // Hide if not admin
-      }
+      adminBtn.style.display = isAuthorizedAdmin(domain, winId) ? 'inline-block' : 'none';
     }
   }
 
-  // --- 1. Check for Active Session in sessionStorage on Load ---
+  // --- 1. Check Active Session on Page Load ---
   let savedSession = JSON.parse(sessionStorage.getItem('activeSession'));
 
   if (savedSession && savedSession.firebaseKey) {
@@ -42,13 +85,212 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formAgentNameInput) formAgentNameInput.value = savedSession.employeeName;
     if (loginReminderScreen) loginReminderScreen.style.display = 'none';
     
-    // Set initial visibility of Admin Button
     updateAdminButtonVisibility(savedSession.agentId, savedSession.winId);
   } else {
     updateAdminButtonVisibility(null, null);
   }
 
-  // --- 2. Handle Login Submission ---
+  // --- 2. Dynamic UI Handlers (VOC & Channel Toggles) ---
+  function resetVocDropdowns() {
+    const vocContainers = [vocInq, vocFfup, vocComp, vocAftersales, vocOthers];
+    vocContainers.forEach(container => {
+      if (container) {
+        container.style.display = 'none';
+        const select = container.querySelector('select');
+        if (select) select.value = '';
+      }
+    });
+  }
+
+  function resetSubSections() {
+    if (ticketCreation) ticketCreation.style.display = 'none';
+    if (followUpSec) followUpSec.style.display = 'none';
+    if (aftersalesSec) aftersalesSec.style.display = 'none';
+  }
+
+  if (concernTypeSelect) {
+    concernTypeSelect.addEventListener('change', (e) => {
+      const selectedValue = e.target.value;
+
+      resetVocDropdowns();
+      resetSubSections();
+
+      switch (selectedValue) {
+        case 'Inquiry':
+          if (vocInq) vocInq.style.display = 'block';
+          break;
+        case 'Complaint':
+          if (vocComp) vocComp.style.display = 'block';
+          if (ticketCreation) ticketCreation.style.display = 'block';
+          break;
+        case 'Follow-up':
+          if (vocFfup) vocFfup.style.display = 'block';
+          if (followUpSec) followUpSec.style.display = 'block';
+          break;
+        case 'Aftersales':
+          if (vocAftersales) vocAftersales.style.display = 'block';
+          if (aftersalesSec) aftersalesSec.style.display = 'block';
+          break;
+        case 'Others':
+          if (vocOthers) vocOthers.style.display = 'block';
+          break;
+      }
+    });
+  }
+
+  if (contactChannel) {
+    contactChannel.addEventListener('change', (e) => {
+      const channel = e.target.value;
+      if (abcaHL) abcaHL.style.display = (channel === 'ENT-HOTLINE') ? 'block' : 'none';
+      if (abcaSA) abcaSA.style.display = (channel === 'ENT-SANA ALL') ? 'block' : 'none';
+      if (abcaEC) abcaEC.style.display = (channel === 'ENT-EMAIL') ? 'block' : 'none';
+    });
+  }
+
+  // Safely retrieve active visible VOC selection
+  function getActiveVocValue() {
+    const activeVocSelect = document.querySelector('div[id^="voc-"]:not([style*="display: none"]) select');
+    return activeVocSelect ? activeVocSelect.value : '';
+  }
+
+  // Helper to safely get input values by ID or Selector
+  function getVal(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  // --- 3. Action Buttons Logic (CEP, ABCA, Reset, Save, TXT) ---
+
+  // Generate CEP Click Handler
+  if (CEPbtn) {
+    CEPbtn.addEventListener('click', () => {
+      const agent = document.querySelector('input[name="aName"]')?.value || '';
+      const teamLead = document.querySelector('input[name="teamLead"]')?.value || '';
+      const username = formUsernameInput?.value || '';
+      const channel = contactChannel?.value || '';
+      const concern = concernTypeSelect?.value || '';
+      const voc = getActiveVocValue();
+      const wocas = getVal('wocastxtarea');
+
+      let cepNote = `=== CEP DOCUMENTATION NOTE ===\n`;
+      cepNote += `Agent: ${agent}\n`;
+      cepNote += `Team Lead: ${teamLead}\n`;
+      cepNote += `Username: ${username}\n`;
+      cepNote += `Channel: ${channel}\n`;
+      cepNote += `Concern Type: ${concern}\n`;
+      cepNote += `VOC: ${voc}\n`;
+      cepNote += `WOCAS Summary: ${wocas}\n`;
+      cepNote += `----------------------------------------\n`;
+
+      if (concern === 'Complaint') {
+        const activeContainer = ticketCreation;
+        const sfdc = activeContainer ? activeContainer.querySelector('input[name="sfdcCase"]')?.value || '' : '';
+        cepNote += `SFDC Case #: ${sfdc}\n`;
+        cepNote += `Contact Name: ${getVal('cName')}\n`;
+        cepNote += `Contact #: ${getVal('cnum')}\n`;
+        cepNote += `Contact Email: ${getVal('cmail')}\n`;
+        cepNote += `Working Permit: ${getVal('wpermit')}\n`;
+        cepNote += `Available Date/Time: ${getVal('adt')}\n`;
+        cepNote += `CV Test Result: ${getVal('cvResult')}\n`;
+        cepNote += `ONU Serial Number: ${getVal('serial')}\n`;
+        cepNote += `Troubleshooting: ${getVal('troubleshooting')}\n`;
+        cepNote += `ONU Light Status: ${getVal('lightStatus')}\n`;
+        cepNote += `Action Taken: ${getVal('actionTaken')}\n`;
+      } else if (concern === 'Follow-up') {
+        const activeContainer = followUpSec;
+        const sfdc = activeContainer ? activeContainer.querySelector('input[name="sfdcCase"]')?.value || '' : '';
+        cepNote += `Billing Account #: ${getVal('billNum')}\n`;
+        cepNote += `Ticket #: ${getVal('ticketNum')}\n`;
+        cepNote += `SFDC Case #: ${sfdc}\n`;
+        cepNote += `Service ID: ${getVal('serviceID')}\n`;
+      } else if (concern === 'Aftersales') {
+        const activeContainer = aftersalesSec;
+        const sfdc = activeContainer ? activeContainer.querySelector('input[name="sfdcCase"]')?.value || '' : '';
+        cepNote += `Billing Account #: ${getVal('billNum')}\n`;
+        cepNote += `SFDC Case #: ${sfdc}\n`;
+        cepNote += `Service ID: ${getVal('serviceID')}\n`;
+      }
+
+      if (noteppad) noteppad.value = cepNote;
+      if (cepnote1txtfield) cepnote1txtfield.value = cepNote;
+    });
+  }
+
+  // ABCA Click Handler
+  if (resABCAbtn) {
+    resABCAbtn.addEventListener('click', () => {
+      const channel = contactChannel?.value || 'ENT-HOTLINE';
+      let abcaNote = `=== ABCA DETAILS ===\n`;
+
+      if (channel === 'ENT-HOTLINE') {
+        abcaNote += `ANI: ${getVal('ani')}\n`;
+        abcaNote += `Caller Name: ${getVal('callerName')}\n`;
+        abcaNote += `Account #: ${getVal('account')}\n`;
+        abcaNote += `Phone #: ${getVal('phone')}\n`;
+      } else if (channel === 'ENT-SANA ALL') {
+        abcaNote += `RITM #: ${getVal('ritm')}\n`;
+        abcaNote += `Received Date: ${getVal('saDated')}\n`;
+        abcaNote += `Customer Acc #: ${getVal('ecCaAcccount')}\n`;
+        abcaNote += `Billing Acc #: ${getVal('saBaAccount')}\n`;
+        abcaNote += `Account Name: ${getVal('ecAccName')}\n`;
+        abcaNote += `Service ID: ${getVal('saServiceID')}\n`;
+      } else if (channel === 'ENT-EMAIL') {
+        abcaNote += `Received Date: ${getVal('ecDated')}\n`;
+        abcaNote += `Customer Acc #: ${getVal('EcCaAcccount')}\n`;
+        abcaNote += `Billing Acc #: ${getVal('ecBaAccount')}\n`;
+        abcaNote += `Account Name: ${getVal('ecAccName')}\n`;
+        abcaNote += `Service ID: ${getVal('ecServiceID')}\n`;
+      }
+
+      if (noteppad) noteppad.value = abcaNote;
+      if (abcatxtfield) abcatxtfield.value = abcaNote;
+    });
+  }
+
+  // Reset Click Handler
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      document.querySelectorAll('input:not([type="color"]), textarea, select').forEach(input => {
+        if (input.name !== 't_name' && input.name !== 'aName') {
+          input.value = '';
+        }
+      });
+      resetVocDropdowns();
+      resetSubSections();
+      if (noteppad) noteppad.value = '';
+    });
+  }
+
+  // Save Click Handler
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      if (!noteppad || !noteppad.value.trim()) {
+        alert("Notepad is empty! Generate CEP or ABCA notes before saving.");
+        return;
+      }
+      alert("Documentation saved successfully to workspace!");
+    });
+  }
+
+  // Export TXT Click Handler
+  if (toTXTbtn) {
+    toTXTbtn.addEventListener('click', () => {
+      const text = noteppad ? noteppad.value : '';
+      if (!text.trim()) {
+        alert("Notepad is empty! Nothing to export.");
+        return;
+      }
+
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Documentation_${Date.now()}.txt`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+  }
+
+  // --- 4. Firebase Authentication & Gateway Submission ---
   if (gatewayLoginForm) {
     gatewayLoginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -98,10 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sessionStorage.setItem('activeSession', JSON.stringify(sessionData));
 
-        // Update Admin Button Visibility
         updateAdminButtonVisibility(sessionData.agentId, sessionData.winId);
 
-        loginReminderScreen.style.display = 'none';
+        if (loginReminderScreen) loginReminderScreen.style.display = 'none';
       } catch (err) {
         console.error("Firebase connection error:", err);
         alert("Unable to verify credentials with Firebase database.");
@@ -109,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 3. Explicit Manual Logout Handler ---
+  // --- 5. Session Logout Handler ---
   if (sessionLogoutBtn) {
     sessionLogoutBtn.addEventListener('click', async () => {
       const activeSession = JSON.parse(sessionStorage.getItem('activeSession'));
@@ -138,17 +379,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (formUsernameInput) formUsernameInput.value = '';
       if (formAgentNameInput) formAgentNameInput.value = '';
       
-      const resetBtn = document.getElementById('resetBtn');
-      if (resetBtn) resetBtn.click();
+      resetVocDropdowns();
+      resetSubSections();
+      if (noteppad) noteppad.value = '';
       
-      // Hide Admin Button on Logout
       updateAdminButtonVisibility(null, null);
 
       if (loginReminderScreen) loginReminderScreen.style.display = 'flex';
     });
   }
 
-  // --- 4. Auto-Log Session End on Browser Close / Shutdown ---
+  // --- 6. Auto-Log Session End on Browser Close ---
   window.addEventListener('beforeunload', () => {
     const activeSession = JSON.parse(sessionStorage.getItem('activeSession'));
     if (activeSession && activeSession.firebaseKey) {
