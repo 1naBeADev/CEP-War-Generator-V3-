@@ -147,44 +147,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Safely retrieve active visible VOC selection
+  // Robust check to find selected VOC value across all VOC select elements
   function getActiveVocValue() {
-    const activeVocSelect = document.querySelector('div[id^="voc-"]:not([style*="display: none"]) select');
-    return activeVocSelect ? activeVocSelect.value : '';
+    const vocSelects = document.querySelectorAll('div[id^="voc-"] select');
+    for (let select of vocSelects) {
+      if (select.value && select.value.trim() !== '') {
+        return select.value.trim();
+      }
+    }
+    return '';
   }
 
-  // Helper to safely get input values by ID or Selector
+  // Helper to safely get input values by ID
   function getVal(id) {
     const el = document.getElementById(id);
     return el ? el.value.trim() : '';
   }
 
-  // --- 3. Action Buttons Logic (CEP, ABCA, Reset, Save, TXT) ---
+  // --- 3. Action Buttons Logic ---
 
   // Generate CEP Click Handler
   if (CEPbtn) {
     CEPbtn.addEventListener('click', () => {
-      const agent = document.querySelector('input[name="aName"]')?.value || '';
-      const teamLead = document.querySelector('input[name="teamLead"]')?.value || '';
-      const username = formUsernameInput?.value || '';
       const channel = contactChannel?.value || '';
       const concern = concernTypeSelect?.value || '';
-      const voc = getActiveVocValue();
-      const wocas = getVal('wocastxtarea');
 
-      let cepNote = `=== CEP DOCUMENTATION NOTE ===\n`;
-      cepNote += `Agent: ${agent}\n`;
-      cepNote += `Team Lead: ${teamLead}\n`;
-      cepNote += `Username: ${username}\n`;
-      cepNote += `Channel: ${channel}\n`;
-      cepNote += `Concern Type: ${concern}\n`;
-      cepNote += `VOC: ${voc}\n`;
-      cepNote += `WOCAS Summary: ${wocas}\n`;
-      cepNote += `----------------------------------------\n`;
+      let cepNote = `Channel: ${channel}\n`;
 
       if (concern === 'Complaint') {
         const activeContainer = ticketCreation;
         const sfdc = activeContainer ? activeContainer.querySelector('input[name="sfdcCase"]')?.value || '' : '';
+        
         cepNote += `SFDC Case #: ${sfdc}\n`;
         cepNote += `Contact Name: ${getVal('cName')}\n`;
         cepNote += `Contact #: ${getVal('cnum')}\n`;
@@ -199,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (concern === 'Follow-up') {
         const activeContainer = followUpSec;
         const sfdc = activeContainer ? activeContainer.querySelector('input[name="sfdcCase"]')?.value || '' : '';
+        
         cepNote += `Billing Account #: ${getVal('billNum')}\n`;
         cepNote += `Ticket #: ${getVal('ticketNum')}\n`;
         cepNote += `SFDC Case #: ${sfdc}\n`;
@@ -206,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (concern === 'Aftersales') {
         const activeContainer = aftersalesSec;
         const sfdc = activeContainer ? activeContainer.querySelector('input[name="sfdcCase"]')?.value || '' : '';
+        
         cepNote += `Billing Account #: ${getVal('billNum')}\n`;
         cepNote += `SFDC Case #: ${sfdc}\n`;
         cepNote += `Service ID: ${getVal('serviceID')}\n`;
@@ -220,27 +215,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (resABCAbtn) {
     resABCAbtn.addEventListener('click', () => {
       const channel = contactChannel?.value || 'ENT-HOTLINE';
-      let abcaNote = `=== ABCA DETAILS ===\n`;
-
+      
+      // Determine Billing Account based on active Channel
+      let billingAcc = '';
       if (channel === 'ENT-HOTLINE') {
-        abcaNote += `ANI: ${getVal('ani')}\n`;
-        abcaNote += `Caller Name: ${getVal('callerName')}\n`;
-        abcaNote += `Account #: ${getVal('account')}\n`;
-        abcaNote += `Phone #: ${getVal('phone')}\n`;
+        billingAcc = getVal('account');
       } else if (channel === 'ENT-SANA ALL') {
-        abcaNote += `RITM #: ${getVal('ritm')}\n`;
-        abcaNote += `Received Date: ${getVal('saDated')}\n`;
-        abcaNote += `Customer Acc #: ${getVal('ecCaAcccount')}\n`;
-        abcaNote += `Billing Acc #: ${getVal('saBaAccount')}\n`;
-        abcaNote += `Account Name: ${getVal('ecAccName')}\n`;
-        abcaNote += `Service ID: ${getVal('saServiceID')}\n`;
+        billingAcc = getVal('saBaAccount');
       } else if (channel === 'ENT-EMAIL') {
-        abcaNote += `Received Date: ${getVal('ecDated')}\n`;
-        abcaNote += `Customer Acc #: ${getVal('EcCaAcccount')}\n`;
-        abcaNote += `Billing Acc #: ${getVal('ecBaAccount')}\n`;
-        abcaNote += `Account Name: ${getVal('ecAccName')}\n`;
-        abcaNote += `Service ID: ${getVal('ecServiceID')}\n`;
+        billingAcc = getVal('ecBaAccount');
       }
+
+      const aniNum = getVal('ani');
+      const vocValue = getActiveVocValue();
+      const actionTaken = getVal('actionTaken');
+
+      let abcaNote = `ANI Number: ${aniNum}\n`;
+      abcaNote += `Billing Account: ${billingAcc}\n`;
+      abcaNote += `Concern: ${vocValue}\n`;
+      abcaNote += `Action Taken: ${actionTaken}\n`;
 
       if (noteppad) noteppad.value = abcaNote;
       if (abcatxtfield) abcatxtfield.value = abcaNote;
