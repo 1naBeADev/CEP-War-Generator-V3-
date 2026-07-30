@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2><i class="fas fa-user-shield"></i> Administration Auditing Portal</h2>
+            <div class="admin-actions">
+            <button id="exportExcelBtn" class="btn-export"><i class="fas fa-file-excel"></i> Export to Excel</button>
+            <button id="clearLogsBtn" class="btn-danger"><i class="fas fa-trash-alt"></i> Clear Data Matrix</button>
+            <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Main Panel</a>
+            </div>
+        </div>
+
+        <p class="admin-subtitle">Operational session trace logs analyzing script runtime execution parameters:</p>
+
+    <div class="table-responsive">
+        <table class="audit-table">
+        <thead>
+            <tr>
+            <th>Agent ID</th>
+            <th>Session Start</th>
+            <th>Session End</th>
+            <th class="text-center">Auto-Docs Used?</th>
+            </tr>
+        </thead>
+            <tbody id="adminAuditLogBody">
+            <!-- Telemetry variables inject here dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Load scripts at the bottom -->
+<script src="admin.js"></script>
+
+</body>
+</html>

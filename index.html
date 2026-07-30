@@ -21,12 +21,12 @@
       <form id="gatewayLoginForm" style="text-align: left; width: 100%;">
         <div class="form-group" style="margin-bottom: 15px;">
           <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px; opacity: 0.9;">PLDT Enterprise ID*</label>
-          <input type="text" id="loginUsername" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: inherit;" placeholder="e.g., pldt_agent01">
+          <input type="text" id="loginUsername" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: inherit;" placeholder="e.g., t-jtagores">
         </div>
         
         <div class="form-group" style="margin-bottom: 20px;">
           <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px; opacity: 0.9;">WIN ID*</label>
-          <input type="number" id="loginWinID" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: inherit;" placeholder="e.g., 12345">
+          <input type="number" id="loginWinID" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: inherit;" placeholder="e.g., 52385305">
         </div>
 
         <button type="submit" class="btn-reminder-acknowledge" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0;">
@@ -66,7 +66,6 @@
   <!-- Meta Tracker Floating Orb -->
   <div id="metaTrackerOrb" class="meta-orb-trigger rgb-mode" title="Toggle Monitoring Case Tracker" 
      style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; cursor: grab;">
-    
     <i class="fas fa-folder-open meta-orb-icon" style="transition: transform 0.2s ease, color 0.2s ease;"></i>
     <span id="metaOrbBadgeCount" class="meta-orb-badge">0</span>
   </div>
@@ -113,16 +112,16 @@
         <span class="status-text-label">Active</span>
       </div>
 
-      <!-- Admin Control Interface Trigger Toggle -->
-      <button type="button" id="adminToggleBtn" class="header-action-btn" title="Open Admin Audit Logs">
-        <i class="fas fa-user-shield"></i>
-      </button>
+      <!-- Admin Control Trigger Toggle (Hidden by default) -->
+      <a href="admin.html" id="adminBtn" class="header-action-btn" title="Open Admin Audit Logs" style="display: none;">
+  <i class="fas fa-user-shield"></i>
+</a>
 
       <button type="button" id="themeToggle" class="header-action-btn" title="Toggle Dark / Light Mode">
         <i class="fas fa-moon"></i>
       </button>
 
-      <div class="theme-picker-wrapper" id="colorSwatchTrigger" title="Personalize Accent Accent Theme">
+      <div class="theme-picker-wrapper" id="colorSwatchTrigger" title="Personalize Accent Theme">
         <label for="agentThemePicker" class="theme-picker-label">
           <i class="fas fa-palette"></i>
         </label>
@@ -292,7 +291,7 @@
                   <option value="Upgrade Request">Upgrade Request</option>
                   <option value="Resume VTD">Resume VTD (VTD)</option>
                   <option value="VTD">Voluntary Temporary Disconnection</option>
-                  <option value="​Change Number">​Change Number</option>
+                  <option value="Change Number">Change Number</option>
                 </optgroup>
                 <optgroup label="Billing">
                   <option value="Billing Inquiry">Billing Inquiry</option>
@@ -533,6 +532,28 @@
             <li>Voice/Data Reference Link: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_EMAIL_CENTER_HOTLINE_ENTERPRISE_REPAIR_SIMPLE_SERVICE_GENUINE.aspx">Repair for Simple Services</a></li>
             <li>War Convention: <a target="_blank" href="https://pldt365.sharepoint.com/:x:/r/sites/PLDT_LIT365/_layouts/15/Doc.aspx?sourcedoc=%7BCD2BD4A9-88C9-487B-9357-89F0BAD9DC4C%7D&file=ENTERPRISE_CEP_WAR_CONVENTION.xlsx&action=default&mobileredirect=true">CEP WAR Convention</a></li>
             <li>CEP Case Management: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTEnterpriseLIT365/SitePages/BP_PLDT_CUSTOMER_ENGAGEMENT_PLATFORM_CASE_CREATION_AND_MANAGEMENT_FOR_IN_FLIGHTTIKCETS.aspx">CEP Case creation for In-Flight Tickets</a></li>
+            <li>Cannot Make Calls <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_GENUINE_HOTLINE_CANNOT_MAKE_CALLS.aspx" target="_blank">Cannot Make Calls</a></li>
+            <li>No Dial Tone Signal Problem: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_GENUINE_HOTLINE_NO_DIAL_TONE_SIGNAL_PROBLEM.aspx" target="_blank">No Dial Tone Signal Problem</a></li>
+            <li>No Dial Tone Signal Problem (Trunkline): <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/FPLDT_ENTERPRISE_HOTLINE_DIAL_TONE_SIGNAL_PROBLEM_TRUNKLINE.aspx" target="_blank">No Dial Tone Signal Problem (Trunkline)</a></li>
+            <li>Bridge Mode Configuration Request: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_MODEM_CONFIG_BRIDGE_MODE_FOR_STATIC_IP_BROADBAND_GUIDELINES_HOTLINE_HANDLING_FOR_BRIDGE_MODE_CONFIGURATION_REQUEST.aspx" target="_blank">Bridge Mode Configuration Request</a></li>
+            <li>CGNAT Deactivation/Activation: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_ENTERPRISE_HOTLINE_CGNAT_DEACTIVATION_ACTIVATION.aspx" target="_blank">CGNAT Deactivation/Activation</a></li>
+            <li>Full Modem Access Request: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_ENTERPRISE_HOTLINE_HANDLING_OF_FULL_MODEM_ACCESS_REQUEST.aspx" target="_blank">Full Modem Access Request</a></li>
+            <li>LAN Port Activation: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENTERPRISE_HOTLINE_LAN_PORT_ACTIVATION.aspx" target="_blank">LAN Port Activation</a></li>
+            <li>No Internet/Data Connection for Naked DSL: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_NO_INTERNET_DATA_CONNECTION_FOR_ENTERPRISE.aspx" target="_blank">No Internet/Data Connection for Naked DSL</a></li>
+            <li>Port Forwarding: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_ENTERPRISE_HOTLINE_PORT_FORWARDING.aspx" target="_blank">Port Forwarding</a></li>
+            <li>Selective Browsing: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_HOTLINE_PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_SELECTIVE_BROWSING.aspx" target="_blank">Selective Browsing</a></li>
+            <li>No Internet/Data Connection (Complex Service): <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_NO_INTERNET_DATA_CONNECTION_COMPLEX_SERVICE_ONLY.aspx" target="_blank">No Internet/Data Connection (Complex Service)</a></li>
+            <li>Change Number: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_CHANGE_NUMBER.aspx" target="_blank">Change Number</a></li>
+            <li>Follow up on Aftersales Requests: <a href="https://pldt365.sharepoint.com/sites/PLDTEnterpriseLIT365/SitePages/PLDT_ENTERPRISE_HOTLINE_FOLLOW_UP_ON_AFTERSALES_REQUESTS.aspx" target="_blank"></a></li>
+            <li>Follow Up Request for Permanent Disconnection: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_HOTLINE_PERMANENT_DISCONNECTION.aspx?csf=1&web=1&e=lG8qW4&CID=4d03a9cb-6a56-49df-96f5-5ea61ed71f6c" target="_blank">Follow Up Request for Permanent Disconnection</a></li>
+            <li>Permanent Disconnection: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_HOTLINE_PERMANENT_DISCONNECTION.aspx?csf=1&web=1&e=lG8qW4&CID=4d03a9cb-6a56-49df-96f5-5ea61ed71f6c" target="_blank">Permanent Disconnection</a></li>
+            <li>Reconnection of Simple Services from Permanent Disconnection: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_ENTERPRISE_HOTLINE_RECON_FROM_PERMANENT_DISCON_DUE_TO_NON_PAYMENT.aspx?web=1" target="_blank">Reconnection of Simple Services from Permanent Disconnection</a></li>
+            <li>Rerouting Request: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_ENT_HOTLINE_REROUTING_INSIDE_WIRING_REQUEST.aspx" target="_blank">Rerouting Request</a></li>
+            <li>Relocation Request: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_ENT_HOTLINE_HANDLING_FOR_RELOCATION_REQUEST.aspx" target="_blank">Relocation Request</a></li>
+            <li>Resume Voluntary Temporary Disconnection (VTD): <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FPLDTCCareLIT365%2FShared%20Documents%2FENTERPRISE%2F2026%2FPDF%20FILES%2F03MARCH%2FPLDT%5FENTERPRISE%5FHOTLINE%5FHANDLING%5FOF%5FRESUME%5FVOLUNTARY%5FTEMPORARY%5FDISCONNECTION%5FVTD%2Epdf&parent=%2Fsites%2FPLDTCCareLIT365%2FShared%20Documents%2FENTERPRISE%2F2026%2FPDF%20FILES%2F03MARCH" target="_blank">Resume Voluntary Temporary Disconnection (VTD)</a></li>
+            <li>Upgrade Request: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_HOTLINE_PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_UPGRADE_REQUEST.aspx" target="_blank">Upgrade Request</a></li>
+            <li>Voluntary Temporary  Disconnection (VTD): <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_HOTLINE_PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_VOLUNTARY_TEMPORARY_DISCONNECTION_VTD.aspx" target="_blank">Voluntary Temporary  Disconnection (VTD)</a></li>
+            <li>Winback Offer for Disconnection Request for Direct Line Service Only: <a href="https://pldt365.sharepoint.com/sites/PLDTEnterpriseLIT365/SitePages/PLDT_ENT_HOTLINE_WINBACK_OFFER_FOR_DISCONNECTION_REQUEST_FOR_DIRECT_LINE_SERVICE_ONLY.aspx" target="_blank">Winback Offer for Disconnection Request (Direct Line service)</a></li>
           </ul>
         </div>
       </div>
