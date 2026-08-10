@@ -90,7 +90,192 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAdminButtonVisibility(null, null);
   }
 
-  // --- 2. Dynamic UI Handlers (VOC & Channel Toggles) ---
+  // --- 2. Explicit LIT Guide VOC Mapping Dictionary ---
+  const LIT_VOC_MAP = {
+    // Complaint VOCs
+    "no internet connection and dialtone": [
+      "repair for simple services"
+    ],
+    "no internet connection": [
+      "no internet/data connection for naked dsl"
+    ],
+    "bridge mode configuration": [
+      "bridge mode configuration request"
+    ],
+    "cgnat deactivation/activation": [
+      "cgnat deactivation/activation"
+    ],
+    "full modem access request": [
+      "full modem access request"
+    ],
+    "lan port activation": [
+      "lan port activation"
+    ],
+    "port forwarding": [
+      "port forwarding"
+    ],
+    "selective browsing": [
+      "selective browsing"
+    ],
+    "no dial tone": [
+      "no dial tone signal problem"
+    ],
+    "cannot make call": [
+      "cannot make calls"
+    ],
+    "cannot receive call": [
+      "cannot make calls"
+    ],
+    "cannot make and receive call": [
+      "cannot make calls"
+    ],
+    "no internet connection(complex)": [
+      "no internet/data connection (complex service)"
+    ],
+
+    // Inquiry & Aftersales VOCs
+    "change number": [
+      "change number"
+    ],
+    "permanent disconnection": [
+      "permanent disconnection",
+      "winback offer for disconnection request"
+    ],
+    "reconnection from td": [
+      "reconnection from temporary disconnection"
+    ],
+    "reconnection from op": [
+      "reconnection of simple services from permanent disconnection"
+    ],
+    "reconnection from pd": [
+      "reconnection of simple services from permanent disconnection"
+    ],
+    "rerouting request": [
+      "rerouting request"
+    ],
+    "relocation request": [
+      "relocation request"
+    ],
+    "upgrade request": [
+      "upgrade request"
+    ],
+    "resume vtd": [
+      "resume voluntary temporary disconnection"
+    ],
+    "resume vtd (vtd)": [
+      "resume voluntary temporary disconnection"
+    ],
+    "vtd": [
+      "voluntary temporary disconnection"
+    ],
+    "voluntary vtd": [
+      "voluntary temporary disconnection"
+    ],
+    
+    // Billing VOCs
+    "billing inquiry": [
+      "billing inquiry"
+    ],
+    "unposted payment": [
+      "unposted payment"
+    ],
+    "copy of bill": [
+      "copy of bill"
+    ],
+    "bol/e enrollment": [
+      "bol/e enrollment"
+    ],
+    "service rebate": [
+      "service rebate"
+    ],
+    "request for modify billing address": [
+      "request for modify billing address"
+    ],
+
+    // Follow-Up VOCs
+    "follow up voice and data problem": [
+      "repair for simple services"
+    ],
+    "follow up no internet connection": [
+      "no internet/data connection for naked dsl"
+    ],
+    "follow up no dialtone": [
+      "no dial tone signal problem"
+    ],
+    "follow up cannot make_receive call": [
+      "cannot make calls"
+    ],
+    "follow up relocation request": [
+      "relocation request"
+    ],
+    "follow up upgrade request": [
+      "upgrade request"
+    ],
+    "follow up reconnection from td": [
+      "reconnection from temporary disconnection"
+    ],
+    "follow up reconnection from pd": [
+      "reconnection of simple services from permanent disconnection"
+    ],
+    "follow up rerouting": [
+      "rerouting request"
+    ],
+    "follow up change number": [
+      "change number"
+    ],
+    "follow up unposted payment": [
+      "unposted payment"
+    ],
+    "follow up copy of bill": [
+      "copy of bill"
+    ],
+    "follow up bol/e enrollment": [
+      "bol/e enrollment"
+    ],
+    "follow up service rebate": [
+      "service rebate"
+    ],
+    "follow up request for permanent disconnection": [
+      "follow up request for permanent disconnection"
+    ]
+  };
+
+  // --- Dynamic LIT Guide Filtering Logic ---
+  function updateLitGuide() {
+    const selectedVoc = getActiveVocValue().toLowerCase().trim();
+    const litItems = document.querySelectorAll('.instructionContent ul li');
+
+    if (!litItems.length) return;
+
+    // Default: If no VOC is selected, display all guide links
+    if (!selectedVoc) {
+      litItems.forEach(item => item.style.display = 'list-item');
+      return;
+    }
+
+    const allowedMatches = LIT_VOC_MAP[selectedVoc];
+
+    litItems.forEach(item => {
+      const itemText = item.textContent.toLowerCase();
+
+      // Check if this item matches any allowed guide title for the selected VOC
+      let isMatched = false;
+      if (allowedMatches && allowedMatches.length > 0) {
+        isMatched = allowedMatches.some(matchKeyword => itemText.includes(matchKeyword));
+      } else {
+        // Fallback for unmapped VOCs: direct substring check
+        isMatched = itemText.includes(selectedVoc) || selectedVoc.includes(itemText);
+      }
+
+      if (isMatched) {
+        item.style.display = 'list-item';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // --- 3. Dynamic UI Handlers (VOC & Channel Toggles) ---
   function resetVocDropdowns() {
     const vocContainers = [vocInq, vocFfup, vocComp, vocAftersales, vocOthers];
     vocContainers.forEach(container => {
@@ -135,8 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
           if (vocOthers) vocOthers.style.display = 'block';
           break;
       }
+      updateLitGuide();
     });
   }
+
+  // Attach event listener to all VOC drop-down elements
+  document.querySelectorAll('div[id^="voc-"] select').forEach(selectEl => {
+    selectEl.addEventListener('change', () => {
+      updateLitGuide();
+    });
+  });
 
   if (contactChannel) {
     contactChannel.addEventListener('change', (e) => {
@@ -164,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return el ? el.value.trim() : '';
   }
 
-  // --- 3. Action Buttons Logic ---
+  // --- 4. Action Buttons Logic ---
 
   // Generate CEP Click Handler
   if (CEPbtn) {
@@ -251,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
       resetVocDropdowns();
       resetSubSections();
       if (noteppad) noteppad.value = '';
+      updateLitGuide();
     });
   }
 
@@ -283,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 4. Firebase Authentication & Gateway Submission ---
+  // --- 5. Firebase Authentication & Gateway Submission ---
   if (gatewayLoginForm) {
     gatewayLoginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -343,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 5. Session Logout Handler ---
+  // --- 6. Session Logout Handler ---
   if (sessionLogoutBtn) {
     sessionLogoutBtn.addEventListener('click', async () => {
       const activeSession = JSON.parse(sessionStorage.getItem('activeSession'));
@@ -382,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 6. Auto-Log Session End on Browser Close ---
+  // --- 7. Auto-Log Session End on Browser Close ---
   window.addEventListener('beforeunload', () => {
     const activeSession = JSON.parse(sessionStorage.getItem('activeSession'));
     if (activeSession && activeSession.firebaseKey) {
