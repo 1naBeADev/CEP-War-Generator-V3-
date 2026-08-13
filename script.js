@@ -1,35 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Whitelisted Admin Credentials
+  const FIREBASE_URL = 'https://autodocs-a12f0-default-rtdb.firebaseio.com';
+
+  // Strict list of authorized admins
   const AUTHORIZED_ADMINS = [
-    { winId: '52499941', username: 'T-JRCOTE' },
+    { winId: '52499941', username: 't-jrcote' },
     { winId: '52385305', username: 't-jtagores' }
   ];
 
-  // Helper check function for admin authentication
+  // Helper: Check if current active user is in the authorized admin list
   function isAuthorizedAdmin(winId, username) {
     if (!winId || !username) return false;
+
+    const targetWinId = String(winId).trim();
+    const targetUser = String(username).trim().toLowerCase();
+
     return AUTHORIZED_ADMINS.some(admin => 
-      admin.winId === String(winId).trim() && 
-      admin.username.toLowerCase() === String(username).trim().toLowerCase()
+      admin.winId === targetWinId && 
+      admin.username.toLowerCase() === targetUser
     );
   }
 
-  // Dynamic Injection: Only create & append the Admin Button if authorized
-  function checkAndSetAdminAccess(winId, username) {
+  // Inject or Remove Admin Link pointing to admin.html
+  function setAdminVisibility(winId, username) {
     let adminBtn = document.getElementById('adminBtn');
 
     if (isAuthorizedAdmin(winId, username)) {
       if (!adminBtn) {
         const headerControls = document.querySelector('.header-control-actions');
         if (headerControls) {
-          adminBtn = document.createElement('button');
+          adminBtn = document.createElement('a');
           adminBtn.id = 'adminBtn';
+          adminBtn.href = 'admin.html';
           adminBtn.className = 'header-action-btn';
           adminBtn.title = 'Open Admin Audit Logs';
           adminBtn.innerHTML = '<i class="fas fa-user-shield"></i>';
-
-          adminBtn.addEventListener('click', openAdminPanel);
 
           const themeToggle = document.getElementById('themeToggle');
           if (themeToggle) {
@@ -40,32 +45,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } else {
-      // Completely remove element from DOM if user is unauthorized
       if (adminBtn) {
         adminBtn.remove();
       }
     }
   }
 
-  // Check existing login session on load
-  const sessionData = sessionStorage.getItem('activeAgentSession');
-  if (sessionData) {
-    const loginOverlay = document.getElementById('loginReminderScreen');
-    if (loginOverlay) loginOverlay.style.display = 'none';
+  // Database Authentication Check
+  async function authenticateWithFirebase(winId, username) {
+    if (!winId || !username) return false;
 
-    const agent = JSON.parse(sessionData);
-    const tNameInput = document.getElementById('t_name');
-    if (tNameInput) tNameInput.value = agent.username || '';
+    try {
+      const response = await fetch(`${FIREBASE_URL}/.json`);
+      const rootData = await response.json();
 
-    checkAndSetAdminAccess(agent.winId, agent.username);
-  } else {
-    checkAndSetAdminAccess(null, null);
+      if (!rootData) return false;
+
+      let rawList = [];
+
+      if (Array.isArray(rootData)) {
+        rawList = rootData;
+      } else if (typeof rootData === 'object') {
+        const source = rootData.employees || rootData.users || rootData;
+        rawList = Array.isArray(source) ? source : Object.values(source);
+      }
+
+      return rawList.some(user => {
+        if (!user || typeof user !== 'object') return false;
+
+        const uWin = String(
+          user["Win ID"] || user.winId || user.winID || user.agentId || ''
+        ).trim();
+
+        const uDomain = String(
+          user["PLDTSMART Domain"] || user.username || user.agentName || ''
+        ).trim().toLowerCase();
+
+        return (
+          uWin === String(winId).trim() &&
+          uDomain === String(username).trim().toLowerCase()
+        );
+      });
+    } catch (err) {
+      console.error("Firebase Auth Error:", err);
+      return false;
+    }
   }
 
-  // --- LOGIN EVENT ---
+  // Check active session on initial load
+  const sessionData = sessionStorage.getItem('activeAgentSession');
+  if (sessionData) {
+    const agent = JSON.parse(sessionData);
+
+    authenticateWithFirebase(agent.winId, agent.username).then(isValid => {
+      if (isValid) {
+        const loginOverlay = document.getElementById('loginReminderScreen');
+        if (loginOverlay) loginOverlay.style.display = 'none';
+
+        const tNameInput = document.getElementById('t_name');
+        if (tNameInput) tNameInput.value = agent.username || '';
+
+        setAdminVisibility(agent.winId, agent.username);
+      } else {
+        sessionStorage.removeItem('activeAgentSession');
+        const loginOverlay = document.getElementById('loginReminderScreen');
+        if (loginOverlay) loginOverlay.style.display = 'flex';
+        setAdminVisibility(null, null);
+      }
+    });
+  } else {
+    setAdminVisibility(null, null);
+  }
+
+  // Gateway Login Form Submission
   const gatewayLoginForm = document.getElementById('gatewayLoginForm');
   if (gatewayLoginForm) {
-    gatewayLoginForm.addEventListener('submit', (e) => {
+    gatewayLoginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const username = document.getElementById('loginUsername').value.trim();
@@ -76,22 +131,52 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      const isAuthenticated = await authenticateWithFirebase(winId, username);
+
+      if (!isAuthenticated) {
+        alert('Access Denied: Invalid WinID or Username combination.');
+        return;
+      }
+
+      const loginTimeFormatted = new Date().toLocaleString();
+      const sessionStartIso = new Date().toISOString();
+
+      let logKey = null;
+      try {
+        const logPayload = {
+          agentId: `${username} (${winId})`,
+          loginTime: loginTimeFormatted,
+          logoutTime: 'Active Session',
+          autoDocsUsed: 'No',
+          createdAt: sessionStartIso
+        };
+
+        const res = await fetch(`${FIREBASE_URL}/loginHistory.json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logPayload)
+        });
+        
+        const logData = await res.json();
+        logKey = logData ? logData.name : null;
+      } catch (err) {
+        console.warn('Could not record login log to Firebase:', err);
+      }
+
       const activeSession = {
         username: username,
         winId: winId,
-        sessionStartTime: new Date().toISOString()
+        sessionStartTime: sessionStartIso,
+        firebaseLogKey: logKey
       };
 
       sessionStorage.setItem('activeAgentSession', JSON.stringify(activeSession));
 
-      // Populate PLDT username field automatically
       const tNameInput = document.getElementById('t_name');
       if (tNameInput) tNameInput.value = username;
 
-      // Inject or Remove Admin Button based on active credentials
-      checkAndSetAdminAccess(winId, username);
+      setAdminVisibility(winId, username);
 
-      // Hide login screen
       const loginOverlay = document.getElementById('loginReminderScreen');
       if (loginOverlay) loginOverlay.style.display = 'none';
     });
@@ -112,61 +197,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const session = JSON.parse(rawSession);
 
-      const payload = {
-        agent: {
-          username: session.username,
-          winId: session.winId,
-          sessionStartTime: session.sessionStartTime
-        },
-        savedAt: new Date().toISOString(),
-        formData: {
-          agentName: document.getElementById('aName')?.value || '',
-          teamLead: document.getElementById('teamLead')?.value || '',
-          pldtUsername: document.getElementById('t_name')?.value || '',
-          channel: document.getElementById('contactChannel')?.value || '',
-          concernType: document.getElementById('concernType')?.value || '',
-          wocasSummary: document.getElementById('wocastxtarea')?.value || '',
-          notesOutput: document.getElementById('noteppad')?.value || ''
-        }
-      };
-
       try {
-        const response = await fetch('/api/save-agent-work', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
+        if (session.firebaseLogKey) {
+          const res = await fetch(`${FIREBASE_URL}/loginHistory/${session.firebaseLogKey}.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ autoDocsUsed: 'Yes' })
+          });
 
-        if (response.ok) {
-          saveToLocalAuditLogs(payload);
-          alert('Work and agent session saved successfully to the database!');
+          if (!res.ok) {
+            console.error(`Firebase PATCH failed (${res.status})`);
+          }
         } else {
-          saveToLocalAuditLogs(payload);
-          alert('Work saved to workspace database (Local Mode)!');
+          const logPayload = {
+            agentId: `${session.username} (${session.winId})`,
+            loginTime: new Date(session.sessionStartTime).toLocaleString(),
+            logoutTime: 'Active Session',
+            autoDocsUsed: 'Yes',
+            createdAt: new Date().toISOString()
+          };
+
+          const res = await fetch(`${FIREBASE_URL}/loginHistory.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(logPayload)
+          });
+
+          if (res.ok) {
+            const logData = await res.json();
+            session.firebaseLogKey = logData.name;
+            sessionStorage.setItem('activeAgentSession', JSON.stringify(session));
+          }
         }
-      } catch (error) {
-        console.warn('API error encountered, persisting locally:', error);
-        saveToLocalAuditLogs(payload);
-        alert('Work and session successfully saved locally!');
+
+        alert('Work saved successfully!');
+      } catch (err) {
+        console.error('Error saving session status:', err);
+        alert('Work saved locally, but failed to sync with database.');
       }
     });
   }
 
-  function saveToLocalAuditLogs(entry) {
-    const logs = JSON.parse(localStorage.getItem('auditLogs') || '[]');
-    logs.push(entry);
-    localStorage.setItem('auditLogs', JSON.stringify(logs));
-  }
-
-  // --- LOGOUT EVENT ---
+  // Session Logout
   const logoutBtn = document.getElementById('sessionLogoutBtn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', async () => {
       if (confirm('Are you sure you want to end your active session?')) {
+        const rawSession = sessionStorage.getItem('activeAgentSession');
+        
+        if (rawSession) {
+          const session = JSON.parse(rawSession);
+          if (session.firebaseLogKey) {
+            try {
+              await fetch(`${FIREBASE_URL}/loginHistory/${session.firebaseLogKey}.json`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ logoutTime: new Date().toLocaleString() })
+              });
+            } catch (err) {
+              console.warn('Failed to update logout time in Firebase.', err);
+            }
+          }
+        }
+
         sessionStorage.removeItem('activeAgentSession');
-        checkAndSetAdminAccess(null, null);
+        setAdminVisibility(null, null);
 
         const loginOverlay = document.getElementById('loginReminderScreen');
         if (loginOverlay) loginOverlay.style.display = 'flex';
@@ -179,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- CONCERN TYPE DROPDOWN TOGGLES ---
+  // UI Event Handlers
   const concernTypeSelect = document.getElementById('concernType');
   const vocInq = document.getElementById('voc-inq');
   const vocFfup = document.getElementById('voc-ffup');
@@ -215,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- CHANNEL SELECTOR TOGGLES ---
   const contactChannel = document.getElementById('contactChannel');
   const abcaHL = document.getElementById('abcaHL');
   const abcaSA = document.getElementById('abcaSA');
@@ -238,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- RESET BUTTON EVENT ---
   const resetBtn = document.getElementById('resetBtn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
@@ -256,7 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- EXPORT TO TXT ---
   const toTXTbtn = document.getElementById('toTXTbtn');
   if (toTXTbtn) {
     toTXTbtn.addEventListener('click', () => {
@@ -273,62 +365,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- THEME TOGGLE ---
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
       const icon = themeToggle.querySelector('i');
       if (icon) {
-        if (document.body.classList.contains('dark-mode')) {
-          icon.className = 'fas fa-sun';
-        } else {
-          icon.className = 'fas fa-moon';
-        }
+        icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
       }
     });
   }
 
-  // --- COLOR ACCENT PICKER ---
   const agentThemePicker = document.getElementById('agentThemePicker');
   if (agentThemePicker) {
     agentThemePicker.addEventListener('input', (e) => {
       document.documentElement.style.setProperty('--primary-color', e.target.value);
-    });
-  }
-
-  // --- ADMIN PANEL MODAL CONTROLS ---
-  function openAdminPanel() {
-    const adminPanelScreen = document.getElementById('adminPanelScreen');
-    const adminAuditLogBody = document.getElementById('adminAuditLogBody');
-    if (!adminAuditLogBody) return;
-
-    adminAuditLogBody.innerHTML = '';
-    const logs = JSON.parse(localStorage.getItem('auditLogs') || '[]');
-
-    if (logs.length === 0) {
-      adminAuditLogBody.innerHTML = `<tr><td colspan="4" style="padding:15px; text-align:center; opacity: 0.7;">No saved records in database yet.</td></tr>`;
-    } else {
-      logs.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.style.borderBottom = '1px solid var(--border-color)';
-        tr.innerHTML = `
-          <td style="padding: 10px;">${item.agent ? item.agent.username : 'N/A'} (${item.agent ? item.agent.winId : ''})</td>
-          <td style="padding: 10px;">${item.agent && item.agent.sessionStartTime ? new Date(item.agent.sessionStartTime).toLocaleString() : 'N/A'}</td>
-          <td style="padding: 10px;">${new Date(item.savedAt).toLocaleString()}</td>
-          <td style="padding: 10px; text-align: center;">Yes</td>
-        `;
-        adminAuditLogBody.appendChild(tr);
-      });
-    }
-    if (adminPanelScreen) adminPanelScreen.style.display = 'flex';
-  }
-
-  const closeAdminBtn = document.getElementById('closeAdminBtn');
-  if (closeAdminBtn) {
-    closeAdminBtn.addEventListener('click', () => {
-      const adminPanelScreen = document.getElementById('adminPanelScreen');
-      if (adminPanelScreen) adminPanelScreen.style.display = 'none';
     });
   }
 
