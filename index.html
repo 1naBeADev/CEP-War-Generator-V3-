@@ -51,7 +51,7 @@
             <tr style="background: rgba(0,0,0,0.1); border-bottom: 2px solid var(--border-color);">
               <th style="padding: 10px;">Agent ID</th>
               <th style="padding: 10px;">Session Start</th>
-              <th style="padding: 10px;">Session End</th>
+              <th style="padding: 10px;">Saved At</th>
               <th style="padding: 10px; text-align: center;">Auto-Docs Used?</th>
             </tr>
           </thead>
@@ -61,13 +61,6 @@
         </table>
       </div>
     </div>
-  </div>
-
-  <!-- Meta Tracker Floating Orb -->
-  <div id="metaTrackerOrb" class="meta-orb-trigger rgb-mode" title="Toggle Monitoring Case Tracker" 
-     style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; cursor: grab;">
-    <i class="fas fa-folder-open meta-orb-icon" style="transition: transform 0.2s ease, color 0.2s ease;"></i>
-    <span id="metaOrbBadgeCount" class="meta-orb-badge">0</span>
   </div>
 
   <!-- Meta Tracker Drawer Layout Panel -->
@@ -112,10 +105,7 @@
         <span class="status-text-label">Active</span>
       </div>
 
-      <!-- Admin Control Trigger Toggle (Hidden by default) -->
-      <a href="admin.html" id="adminBtn" class="header-action-btn" title="Open Admin Audit Logs" style="display: none;">
-        <i class="fas fa-user-shield"></i>
-      </a>
+      <!-- Admin Control Trigger Toggle (Hidden by default, shown only for authorized users) -->
 
       <button type="button" id="themeToggle" class="header-action-btn" title="Toggle Dark / Light Mode">
         <i class="fas fa-moon"></i>
@@ -149,11 +139,11 @@
         <div class="form-grid">
           <div>
             <label>Agent Name*</label>
-            <input type="text" name="aName">
+            <input type="text" name="aName" id="aName">
           </div>
           <div>
             <label>Team Lead*</label>
-            <input type="text" name="teamLead">
+            <input type="text" name="teamLead" id="teamLead">
           </div>
         </div>
       </div>
@@ -162,7 +152,7 @@
         <div class="form-grid">
           <div>
             <label>PLDT Username*</label>
-            <input type="text" name="t_name">
+            <input type="text" name="t_name" id="t_name">
           </div>
           <div>
             <label>Channel*</label>
@@ -472,11 +462,11 @@
           <div class="form-grid" style="margin-top: 8px;">
             <div>
               <label>SFDC Case Number</label>
-              <input type="text" name="sfdcCase" id="sfdcCase">
+              <input type="text" name="sfdcCaseFollow" id="sfdcCaseFollow">
             </div>
             <div>
               <label>Service ID</label>
-              <input type="text" name="serviceID" id="serviceID">
+              <input type="text" name="serviceIDFollow" id="serviceIDFollow">
             </div>
           </div>
         </div>
@@ -485,16 +475,16 @@
           <div class="form-grid">
             <div>
               <label>Billing Account Number</label>
-              <input type="number" name="billNum" id="billNum">
+              <input type="number" name="billNumAfter" id="billNumAfter">
             </div>
             <div>
               <label>SFDC Case Number</label>
-              <input type="text" name="sfdcCase" id="sfdcCase">
+              <input type="text" name="sfdcCaseAfter" id="sfdcCaseAfter">
             </div>
           </div>
           <div class="form-group" style="margin-top: 8px;">
             <label>Service ID</label>
-            <input type="text" name="serviceID" id="serviceID">
+            <input type="text" name="serviceIDAfter" id="serviceIDAfter">
           </div>
         </div>
       </div>
@@ -534,7 +524,7 @@
             <li>Voice/Data Reference Link: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_EMAIL_CENTER_HOTLINE_ENTERPRISE_REPAIR_SIMPLE_SERVICE_GENUINE.aspx">Repair for Simple Services</a></li>
             <li>War Convention: <a target="_blank" href="https://pldt365.sharepoint.com/:x:/r/sites/PLDT_LIT365/_layouts/15/Doc.aspx?sourcedoc=%7BCD2BD4A9-88C9-487B-9357-89F0BAD9DC4C%7D&file=ENTERPRISE_CEP_WAR_CONVENTION.xlsx&action=default&mobileredirect=true">CEP WAR Convention</a></li>
             <li>CEP Case Management: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTEnterpriseLIT365/SitePages/BP_PLDT_CUSTOMER_ENGAGEMENT_PLATFORM_CASE_CREATION_AND_MANAGEMENT_FOR_IN_FLIGHTTIKCETS.aspx">CEP Case creation for In-Flight Tickets</a></li>
-            <li>Cannot Make Calls <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_GENUINE_HOTLINE_CANNOT_MAKE_CALLS.aspx" target="_blank">Cannot Make Calls</a></li>
+            <li>Cannot Make Calls: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_GENUINE_HOTLINE_CANNOT_MAKE_CALLS.aspx" target="_blank">Cannot Make Calls</a></li>
             <li>No Dial Tone Signal Problem: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_GENUINE_HOTLINE_NO_DIAL_TONE_SIGNAL_PROBLEM.aspx" target="_blank">No Dial Tone Signal Problem</a></li>
             <li>No Dial Tone Signal Problem (Trunkline): <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/FPLDT_ENTERPRISE_HOTLINE_DIAL_TONE_SIGNAL_PROBLEM_TRUNKLINE.aspx" target="_blank">No Dial Tone Signal Problem (Trunkline)</a></li>
             <li>Bridge Mode Configuration Request: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/PLDT_MODEM_CONFIG_BRIDGE_MODE_FOR_STATIC_IP_BROADBAND_GUIDELINES_HOTLINE_HANDLING_FOR_BRIDGE_MODE_CONFIGURATION_REQUEST.aspx" target="_blank">Bridge Mode Configuration Request</a></li>
@@ -547,6 +537,7 @@
             <li>No Internet/Data Connection (Complex Service): <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_NO_INTERNET_DATA_CONNECTION_COMPLEX_SERVICE_ONLY.aspx" target="_blank">No Internet/Data Connection (Complex Service)</a></li>
             <li>Change Number: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_CHANGE_NUMBER.aspx" target="_blank">Change Number</a></li>
             <li>Follow up on Aftersales Requests: <a href="https://pldt365.sharepoint.com/sites/PLDTEnterpriseLIT365/SitePages/PLDT_ENTERPRISE_HOTLINE_FOLLOW_UP_ON_AFTERSALES_REQUESTS.aspx" target="_blank">Follow up on Aftersales Requests</a></li>
+            <li>Follow up on Repair: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_HOTLINE_PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_FOLLOW_UP_REPAIR.aspx" target="_blank">Follow up on Repair</a></li>
             <li>Follow Up Request for Permanent Disconnection: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_HOTLINE_PERMANENT_DISCONNECTION.aspx?csf=1&web=1&e=lG8qW4&CID=4d03a9cb-6a56-49df-96f5-5ea61ed71f6c" target="_blank">Follow Up Request for Permanent Disconnection</a></li>
             <li>Permanent Disconnection: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_HOTLINE_PERMANENT_DISCONNECTION.aspx?csf=1&web=1&e=lG8qW4&CID=4d03a9cb-6a56-49df-96f5-5ea61ed71f6c" target="_blank">Permanent Disconnection</a></li>
             <li>Reconnection from Temporary Disconnection: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_HOTLINE_RECON_FROM_TEMPORARY_DISCON.aspx" target="_blank">Reconnection from Temporary Disconnection</a></li>
