@@ -87,6 +87,25 @@
     </div>
   </div>
 
+  <!-- Feedback Drawer Panel -->
+  <div id="feedbackDrawer" class="feedback-drawer-panel">
+    <div class="glass-drawer-header">
+      <h3><i class="fas fa-comment-alt"></i> System Feedback</h3>
+      <button id="closeFeedbackDrawerBtn" class="btn-close-modal">&times;</button>
+    </div>
+    <p class="glass-drawer-desc">We value your input. Share your thoughts or report issues with the tool.</p>
+    
+    <form id="feedbackForm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label for="feedbackMessage">Your Comments*</label>
+        <textarea id="feedbackMessage" rows="5" required placeholder="Describe your feedback here..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); resize: vertical;"></textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="width: 100%;">
+        <i class="fas fa-paper-plane"></i> Submit Feedback
+      </button>
+    </form>
+  </div>
+
   <!-- Main System Action Header Navigation Bar -->
   <header class="workspace-brand-header">
     <div class="brand-identity-wrapper">
@@ -105,7 +124,10 @@
         <span class="status-text-label">Active</span>
       </div>
 
-      <!-- Admin Control Trigger Toggle (Hidden by default, shown only for authorized users) -->
+      <!-- Feedback Header Action Button -->
+      <button type="button" id="feedbackOrbBtn" class="header-action-btn" title="Provide Feedback">
+        <i class="fas fa-comment-dots"></i>
+      </button>
 
       <button type="button" id="themeToggle" class="header-action-btn" title="Toggle Dark / Light Mode">
         <i class="fas fa-moon"></i>
@@ -118,7 +140,6 @@
         <input type="color" id="agentThemePicker" class="agent-color-input" value="#2563eb">
       </div>
 
-      <!-- Core Identity Session Terminate Handle -->
       <button type="button" id="sessionLogoutBtn" class="header-action-btn" title="Logout Secure Session" style="color: #ef4444;">
         <i class="fas fa-sign-out-alt"></i>
       </button>
@@ -134,7 +155,6 @@
         <h3><i class="fas fa-edit"></i> Documentation Field</h3>
       </div>
 
-      <!-- Agent Profile Meta Form Rows -->
       <div class="form-group">
         <div class="form-grid">
           <div>
@@ -167,7 +187,6 @@
 
       <hr style="border:0; border-top: 1px solid var(--border-color); margin:12px 0;">
 
-      <!-- Case Infrastructure Management Input Clusters -->
       <div id="abcaHL" class="form-group">
         <div class="form-grid">
           <div>
@@ -251,7 +270,6 @@
         </div>
       </div>
 
-      <!-- Concern and Strategy Tree Matrix Injections Dropdowns -->
       <div class="form-group">
         <div class="form-grid">
           <div>
@@ -391,7 +409,11 @@
         <textarea name="wocastxtarea" id="wocastxtarea" rows="2"></textarea>
       </div>
 
-      <!-- Context Specific System Injections Panels -->
+      <div class="form-group">
+        <label>Action Taken</label>
+        <textarea name="actionTaken" id="actionTaken" rows="2"></textarea>
+      </div>
+
       <div id="dropDownOptions">
         <div id="ticketCreation" style="display:none;">
           <div class="form-grid">
@@ -442,10 +464,6 @@
             <label>ONU Light Status*</label>
             <input type="text" name="lightStatus" id="lightStatus">
           </div>
-          <div class="form-group">
-            <label>Action Taken</label>
-            <textarea name="actionTaken" id="actionTaken" rows="2"></textarea>
-          </div>
         </div>
 
         <div id="follow-up" style="display:none;">
@@ -489,7 +507,6 @@
         </div>
       </div>
 
-      <!-- Action Button Panel Array -->
       <div class="buttons">
         <button type="button" class="btn-primary" id="CEPbtn"><i class="fas fa-cog"></i> Generate CEP</button>
         <button type="button" class="btn-secondary" id="resABCAbtn">ABCA</button>
@@ -522,7 +539,7 @@
         <div class="icDiv">
           <ul style="padding-left: 16px; font-size: 12.5px; line-height: 1.6;">
             <li>Voice/Data Reference Link: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_EMAIL_CENTER_HOTLINE_ENTERPRISE_REPAIR_SIMPLE_SERVICE_GENUINE.aspx">Repair for Simple Services</a></li>
-            <li>War Convention: <a target="_blank" href="https://pldt365.sharepoint.com/:x:/r/sites/PLDT_LIT365/_layouts/15/Doc.aspx?sourcedoc=%7BCD2BD4A9-88C9-487B-9357-89F0BAD9DC4C%7D&file=ENTERPRISE_CEP_WAR_CONVENTION.xlsx&action=default&mobileredirect=true">CEP WAR Convention</a></li>
+            <li>War Convention: <a target="_blank" href="https://pldt365.sharepoint.com/:x:/r/sites/PLDTEnterpriseLIT365/_layouts/15/Doc.aspx?sourcedoc=%7B99f0abe1-d3e7-4440-85b3-95efaf96636d%7D&action=view">CEP WAR Convention</a></li>
             <li>CEP Case Management: <a target="_blank" href="https://pldt365.sharepoint.com/sites/PLDTEnterpriseLIT365/SitePages/BP_PLDT_CUSTOMER_ENGAGEMENT_PLATFORM_CASE_CREATION_AND_MANAGEMENT_FOR_IN_FLIGHTTIKCETS.aspx">CEP Case creation for In-Flight Tickets</a></li>
             <li>Cannot Make Calls: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_GENUINE_HOTLINE_CANNOT_MAKE_CALLS.aspx" target="_blank">Cannot Make Calls</a></li>
             <li>No Dial Tone Signal Problem: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENT_GENUINE_HOTLINE_NO_DIAL_TONE_SIGNAL_PROBLEM.aspx" target="_blank">No Dial Tone Signal Problem</a></li>

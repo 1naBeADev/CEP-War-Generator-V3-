@@ -1,6 +1,9 @@
+// Standard Notes Generator Script Suite
+
 document.addEventListener('DOMContentLoaded', () => {
   const FIREBASE_URL = 'https://autodocs-a12f0-default-rtdb.firebaseio.com';
   const adminAuditLogBody = document.getElementById('adminAuditLogBody');
+  const adminFeedbackLogBody = document.getElementById('adminFeedbackLogBody');
   const exportExcelBtn = document.getElementById('exportExcelBtn');
   const clearLogsBtn = document.getElementById('clearLogsBtn');
 
@@ -42,6 +45,48 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error("Error fetching logs from Firebase:", err);
       adminAuditLogBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 24px; color: var(--danger);">Failed to load records from Firebase.</td></tr>`;
+    }
+  }
+
+  async function renderFeedbackLogs() {
+    if (!adminFeedbackLogBody) return;
+    adminFeedbackLogBody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 24px;">Loading feedback entries...</td></tr>`;
+
+    try {
+      const response = await fetch(`${FIREBASE_URL}/feedback.json`);
+      const data = await response.json();
+
+      adminFeedbackLogBody.innerHTML = '';
+
+      if (!data) {
+        adminFeedbackLogBody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 24px; opacity: 0.6;">No feedback records found in Firebase.</td></tr>`;
+        return;
+      }
+
+      // Filter out meta properties like 'init: true' if present and map entries
+      const feedbackEntries = Object.entries(data)
+        .filter(([key, val]) => val && typeof val === 'object' && val.message)
+        .map(([key, val]) => val);
+
+      if (feedbackEntries.length === 0) {
+        adminFeedbackLogBody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 24px; opacity: 0.6;">No valid feedback entries found.</td></tr>`;
+        return;
+      }
+
+      feedbackEntries.reverse().forEach(item => {
+        const row = document.createElement('tr');
+        const formattedDate = item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'N/A';
+        
+        row.innerHTML = `
+          <td>${formattedDate}</td>
+          <td style="font-weight: 600;">${item.agent || 'N/A'}</td>
+          <td>${item.message || 'N/A'}</td>
+        `;
+        adminFeedbackLogBody.appendChild(row);
+      });
+    } catch (err) {
+      console.error("Error fetching feedback from Firebase:", err);
+      adminFeedbackLogBody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 24px; color: var(--danger);">Failed to load feedback from Firebase.</td></tr>`;
     }
   }
 
@@ -94,4 +139,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderAuditLogs();
+  renderFeedbackLogs();
+});
+
+
+// Admin Panel Tab Switching and Logic Suite
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tabAuditBtn = document.getElementById('tabAuditBtn');
+    const tabFeedbackBtn = document.getElementById('tabFeedbackBtn');
+    const auditSection = document.getElementById('auditSection');
+    const feedbackSection = document.getElementById('feedbackSection');
+
+    if (tabAuditBtn && tabFeedbackBtn && auditSection && feedbackSection) {
+        tabAuditBtn.addEventListener('click', () => {
+            auditSection.style.display = 'block';
+            feedbackSection.style.display = 'none';
+            
+            tabAuditBtn.style.background = 'var(--primary, #2563eb)';
+            tabAuditBtn.style.color = 'white';
+            tabFeedbackBtn.style.background = 'transparent';
+            tabFeedbackBtn.style.color = 'inherit';
+        });
+
+        tabFeedbackBtn.addEventListener('click', () => {
+            auditSection.style.display = 'none';
+            feedbackSection.style.display = 'block';
+            
+            tabFeedbackBtn.style.background = 'var(--primary, #2563eb)';
+            tabFeedbackBtn.style.color = 'white';
+            tabAuditBtn.style.background = 'transparent';
+            tabAuditBtn.style.color = 'inherit';
+        });
+    }
 });

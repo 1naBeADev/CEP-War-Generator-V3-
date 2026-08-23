@@ -2,29 +2,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const FIREBASE_URL = 'https://autodocs-a12f0-default-rtdb.firebaseio.com';
 
-  // Strict list of authorized admins
   const AUTHORIZED_ADMINS = [
     { winId: '52499941', username: 't-jrcote' },
     { winId: '52385305', username: 't-jtagores' }
   ];
 
-  // Helper: Check if current active user is in the authorized admin list
   function isAuthorizedAdmin(winId, username) {
     if (!winId || !username) return false;
-
     const targetWinId = String(winId).trim();
     const targetUser = String(username).trim().toLowerCase();
-
     return AUTHORIZED_ADMINS.some(admin => 
       admin.winId === targetWinId && 
       admin.username.toLowerCase() === targetUser
     );
   }
 
-  // Inject or Remove Admin Link pointing to admin.html
   function setAdminVisibility(winId, username) {
     let adminBtn = document.getElementById('adminBtn');
-
     if (isAuthorizedAdmin(winId, username)) {
       if (!adminBtn) {
         const headerControls = document.querySelector('.header-control-actions');
@@ -44,55 +38,107 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
-    } else {
-      if (adminBtn) {
-        adminBtn.remove();
-      }
+    } else if (adminBtn) {
+      adminBtn.remove();
     }
   }
 
-  // Database Authentication Check
+  // Populate fields dynamically by matching text inputs or layout position
+  function populateUserFields(userRecord, usernameFallback) {
+    const pldtUserInput = document.getElementById('t_name') || document.querySelector('input[placeholder*="USERNAME" i]');
+    if (pldtUserInput && usernameFallback) {
+      pldtUserInput.value = usernameFallback;
+    }
+
+    if (!userRecord || typeof userRecord !== 'object') return;
+
+    const empName = userRecord.employee_name || userRecord["Employee Name"] || userRecord.employeeName || userRecord.name || '';
+    const supName = userRecord.supervisor_name || userRecord["Supervisor Name"] || userRecord.supervisorName || userRecord.team_lead || userRecord.teamLead || '';
+
+    // Query standard inputs for Agent Name and Team Lead
+    const agentInputs = [
+      document.getElementById('agent_name'),
+      document.getElementById('agentName'),
+      document.getElementById('a_name'),
+      document.querySelector('input[name="agent_name"]'),
+      document.querySelector('input[name="agentName"]'),
+      document.querySelectorAll('.header-control-actions ~ * input[type="text"], main input[type="text"]')[0]
+    ];
+
+    const teamLeadInputs = [
+      document.getElementById('team_lead'),
+      document.getElementById('teamLead'),
+      document.getElementById('tl_name'),
+      document.querySelector('input[name="team_lead"]'),
+      document.querySelector('input[name="teamLead"]'),
+      document.querySelectorAll('.header-control-actions ~ * input[type="text"], main input[type="text"]')[1]
+    ];
+
+    const agentInput = agentInputs.find(el => el !== null && el !== undefined);
+    const teamLeadInput = teamLeadInputs.find(el => el !== null && el !== undefined);
+
+    if (agentInput && empName) agentInput.value = empName;
+    if (teamLeadInput && supName) teamLeadInput.value = supName;
+  }
+
   async function authenticateWithFirebase(winId, username) {
     if (!winId || !username) return false;
 
     try {
       const response = await fetch(`${FIREBASE_URL}/.json`);
       const rootData = await response.json();
-
       if (!rootData) return false;
 
-      let rawList = [];
+      const targetWin = String(winId).trim();
+      const targetUser = String(username).trim().toLowerCase();
 
-      if (Array.isArray(rootData)) {
-        rawList = rootData;
-      } else if (typeof rootData === 'object') {
-        const source = rootData.employees || rootData.users || rootData;
-        rawList = Array.isArray(source) ? source : Object.values(source);
-      }
+      const flattenRecords = (obj) => {
+        let acc = [];
+        if (!obj || typeof obj !== 'object') return acc;
+        if (Array.isArray(obj)) {
+          obj.forEach(item => { acc = acc.concat(flattenRecords(item)); });
+        } else {
+          const keys = Object.keys(obj);
+          const looksLikeUser = keys.some(k => ['win_id', 'winId', 'Win ID', 'username', 'pldt_smart_domain'].includes(k));
+          if (looksLikeUser) {
+            acc.push(obj);
+          } else {
+            keys.forEach(k => { acc = acc.concat(flattenRecords(obj[k])); });
+          }
+        }
+        return acc;
+      };
 
-      return rawList.some(user => {
+      const allRecords = flattenRecords(rootData);
+
+      const matchedRecord = allRecords.find(user => {
         if (!user || typeof user !== 'object') return false;
 
         const uWin = String(
-          user["Win ID"] || user.winId || user.winID || user.agentId || ''
+          user.win_id || user["Win ID"] || user.winId || user.winID || user.agentId || ''
         ).trim();
 
         const uDomain = String(
-          user["PLDTSMART Domain"] || user.username || user.agentName || ''
+          user.pldt_smart_domain || user["PLDTSMART Domain"] || user.username || user.agentName || ''
         ).trim().toLowerCase();
 
-        return (
-          uWin === String(winId).trim() &&
-          uDomain === String(username).trim().toLowerCase()
-        );
+        return (uWin === targetWin && uDomain === targetUser);
       });
+
+      if (matchedRecord) {
+        populateUserFields(matchedRecord, username);
+        return true;
+      }
+
+      return false;
+
     } catch (err) {
       console.error("Firebase Auth Error:", err);
       return false;
     }
   }
 
-  // Check active session on initial load
+  // Active Session Restore
   const sessionData = sessionStorage.getItem('activeAgentSession');
   if (sessionData) {
     const agent = JSON.parse(sessionData);
@@ -101,10 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isValid) {
         const loginOverlay = document.getElementById('loginReminderScreen');
         if (loginOverlay) loginOverlay.style.display = 'none';
-
-        const tNameInput = document.getElementById('t_name');
-        if (tNameInput) tNameInput.value = agent.username || '';
-
         setAdminVisibility(agent.winId, agent.username);
       } else {
         sessionStorage.removeItem('activeAgentSession');
@@ -117,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setAdminVisibility(null, null);
   }
 
-  // Gateway Login Form Submission
+  // Gateway Login Submit Handler
   const gatewayLoginForm = document.getElementById('gatewayLoginForm');
   if (gatewayLoginForm) {
     gatewayLoginForm.addEventListener('submit', async (e) => {
@@ -171,10 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       sessionStorage.setItem('activeAgentSession', JSON.stringify(activeSession));
-
-      const tNameInput = document.getElementById('t_name');
-      if (tNameInput) tNameInput.value = username;
-
       setAdminVisibility(winId, username);
 
       const loginOverlay = document.getElementById('loginReminderScreen');
@@ -182,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- SAVE BUTTON EVENT ---
+  // Save Button
   const saveBtn = document.getElementById('saveBtn');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
@@ -199,15 +237,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         if (session.firebaseLogKey) {
-          const res = await fetch(`${FIREBASE_URL}/loginHistory/${session.firebaseLogKey}.json`, {
+          await fetch(`${FIREBASE_URL}/loginHistory/${session.firebaseLogKey}.json`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ autoDocsUsed: 'Yes' })
           });
-
-          if (!res.ok) {
-            console.error(`Firebase PATCH failed (${res.status})`);
-          }
         } else {
           const logPayload = {
             agentId: `${session.username} (${session.winId})`,
@@ -244,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.addEventListener('click', async () => {
       if (confirm('Are you sure you want to end your active session?')) {
         const rawSession = sessionStorage.getItem('activeAgentSession');
-        
         if (rawSession) {
           const session = JSON.parse(rawSession);
           if (session.firebaseLogKey) {
@@ -274,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // UI Event Handlers
+  // Dynamic Form Sections
   const concernTypeSelect = document.getElementById('concernType');
   const vocInq = document.getElementById('voc-inq');
   const vocFfup = document.getElementById('voc-ffup');
@@ -289,13 +322,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (concernTypeSelect) {
     concernTypeSelect.addEventListener('change', (e) => {
       const val = e.target.value;
-
       [vocInq, vocFfup, vocComp, vocAftersales, vocOthers].forEach(el => { if (el) el.style.display = 'none'; });
       [ticketCreation, followUpSection, aftersalesSection].forEach(el => { if (el) el.style.display = 'none'; });
 
-      if (val === 'Inquiry' && vocInq) {
-        vocInq.style.display = 'block';
-      } else if (val === 'Follow-up') {
+      if (val === 'Inquiry' && vocInq) vocInq.style.display = 'block';
+      else if (val === 'Follow-up') {
         if (vocFfup) vocFfup.style.display = 'block';
         if (followUpSection) followUpSection.style.display = 'block';
       } else if (val === 'Complaint') {
@@ -304,9 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (val === 'Aftersales') {
         if (vocAftersales) vocAftersales.style.display = 'block';
         if (aftersalesSection) aftersalesSection.style.display = 'block';
-      } else if (val === 'Others' && vocOthers) {
-        vocOthers.style.display = 'block';
-      }
+      } else if (val === 'Others' && vocOthers) vocOthers.style.display = 'block';
     });
   }
 
@@ -322,12 +351,51 @@ document.addEventListener('DOMContentLoaded', () => {
       if (abcaSA) abcaSA.style.display = 'none';
       if (abcaEC) abcaEC.style.display = 'none';
 
-      if (val === 'ENT-HOTLINE' && abcaHL) {
-        abcaHL.style.display = 'block';
-      } else if (val === 'ENT-SANA ALL' && abcaSA) {
-        abcaSA.style.display = 'block';
-      } else if (val === 'ENT-EMAIL' && abcaEC) {
-        abcaEC.style.display = 'block';
+      if (val === 'ENT-HOTLINE' && abcaHL) abcaHL.style.display = 'block';
+      else if (val === 'ENT-SANA ALL' && abcaSA) abcaSA.style.display = 'block';
+      else if (val === 'ENT-EMAIL' && abcaEC) abcaEC.style.display = 'block';
+    });
+  }
+
+  // --- Feedback Form Handling ---
+  const feedbackForm = document.getElementById('feedbackForm') || document.querySelector('form[id*="feedback" i]');
+  if (feedbackForm) {
+    feedbackForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const feedbackText = document.getElementById('feedbackMessage')?.value || feedbackForm.querySelector('textarea')?.value || '';
+      
+      if (!feedbackText.trim()) {
+        alert('Please enter your feedback before submitting.');
+        return;
+      }
+
+      const rawSession = sessionStorage.getItem('activeAgentSession');
+      const session = rawSession ? JSON.parse(rawSession) : { username: 'Anonymous', winId: 'N/A' };
+
+      try {
+        const payload = {
+          agent: `${session.username} (${session.winId})`,
+          message: feedbackText,
+          submittedAt: new Date().toISOString()
+        };
+
+        const res = await fetch(`${FIREBASE_URL}/feedback.json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert('Thank you! Your feedback has been submitted.');
+          feedbackForm.reset();
+          const feedbackDrawer = document.getElementById('feedbackDrawer');
+          if (feedbackDrawer) feedbackDrawer.classList.remove('open');
+        } else {
+          alert('Failed to submit feedback. Please try again.');
+        }
+      } catch (err) {
+        console.error('Feedback Submission Error:', err);
+        alert('An error occurred while submitting feedback.');
       }
     });
   }
@@ -338,9 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (confirm('Clear all input fields?')) {
         const inputs = document.querySelectorAll('main input, main textarea, main select');
         inputs.forEach(input => {
-          if (input.id !== 't_name') {
-            input.value = '';
-          }
+          if (input.id !== 't_name') input.value = '';
         });
         [vocInq, vocFfup, vocComp, vocAftersales, vocOthers, ticketCreation, followUpSection, aftersalesSection].forEach(el => {
           if (el) el.style.display = 'none';
@@ -365,22 +431,171 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- Theme Toggle Support (Corrected for [data-theme] CSS matching) ---
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
+      const root = document.documentElement;
+      const currentTheme = root.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+      // Set the data-theme attribute used by your CSS
+      root.setAttribute('data-theme', newTheme);
+      document.body.setAttribute('data-theme', newTheme);
+
+      // Update button icon dynamically
       const icon = themeToggle.querySelector('i');
       if (icon) {
-        icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
+        icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
       }
     });
   }
 
+  // --- Theme Color Picker Support ---
   const agentThemePicker = document.getElementById('agentThemePicker');
   if (agentThemePicker) {
     agentThemePicker.addEventListener('input', (e) => {
+      document.documentElement.style.setProperty('--primary', e.target.value);
       document.documentElement.style.setProperty('--primary-color', e.target.value);
     });
   }
 
 });
+
+// Feedback Drawer Toggle Logic
+const feedbackBtn = document.getElementById('feedbackOrbBtn');
+const feedbackDrawer = document.getElementById('feedbackDrawer');
+const closeFeedbackBtn = document.getElementById('closeFeedbackDrawerBtn');
+
+if (feedbackBtn && feedbackDrawer) {
+  feedbackBtn.addEventListener('click', () => {
+    feedbackDrawer.classList.toggle('open');
+  });
+}
+
+if (closeFeedbackBtn && feedbackDrawer) {
+  closeFeedbackBtn.addEventListener('click', () => {
+    feedbackDrawer.classList.remove('open');
+  });
+}
+
+// Tab Switching Script Utility
+function switchAdminTab(tabName) {
+    const auditSec = document.getElementById('auditSection');
+    const feedbackSec = document.getElementById('feedbackSection');
+    const tabAuditBtn = document.getElementById('tabAuditBtn');
+    const tabFeedbackBtn = document.getElementById('tabFeedbackBtn');
+
+    if (tabName === 'audit') {
+        auditSec.style.display = 'block';
+        feedbackSec.style.display = 'none';
+        tabAuditBtn.style.background = 'var(--primary, #2563eb)';
+        tabAuditBtn.style.color = 'white';
+        tabFeedbackBtn.style.background = 'transparent';
+        tabFeedbackBtn.style.color = 'inherit';
+    } else {
+        auditSec.style.display = 'none';
+        feedbackSec.style.display = 'block';
+        tabFeedbackBtn.style.background = 'var(--primary, #2563eb)';
+        tabFeedbackBtn.style.color = 'white';
+        tabAuditBtn.style.background = 'transparent';
+        tabAuditBtn.style.color = 'inherit';
+    }
+}
+
+const resABCAbtn = document.getElementById('resABCAbtn');
+  if (resABCAbtn) {
+    resABCAbtn.addEventListener('click', () => {
+      const notepad = document.getElementById('noteppad');
+      if (!notepad) return;
+
+      const getConcernValue = () => {
+        const concernType = document.getElementById('concernType')?.value || '';
+        let vocVal = '';
+        const vocSelectors = ['vocD_inq', 'vocD_ffup', 'vocD_comp', 'vocD_aftersales', 'vocD_others'];
+        for (const id of vocSelectors) {
+          const el = document.getElementById(id);
+          if (el && el.offsetParent !== null && el.value) {
+            vocVal = el.value;
+            break;
+          }
+        }
+        if (concernType && vocVal) {
+          return `${concernType} | ${vocVal}`;
+        }
+        return concernType || vocVal;
+      };
+
+      const updateRealTime = () => {
+        const curAni = document.getElementById('ani')?.value || '';
+        const curAccount = document.getElementById('account')?.value || document.getElementById('saBaAccount')?.value || document.getElementById('ecBaAccount')?.value || '';
+        const curConcern = getConcernValue();
+        const curAction = document.getElementById('actionTaken')?.value || '';
+
+        notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}`;
+      };
+
+      updateRealTime();
+
+      ['ani', 'account', 'saBaAccount', 'ecBaAccount', 'concernType', 'vocD_inq', 'vocD_ffup', 'vocD_comp', 'vocD_aftersales', 'vocD_others', 'actionTaken'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.removeEventListener('input', el._abcaListener);
+          el.removeEventListener('change', el._abcaListener);
+          el._abcaListener = updateRealTime;
+          el.addEventListener('input', updateRealTime);
+          el.addEventListener('change', updateRealTime);
+        }
+      });
+    });
+  }
+
+
+  // CEP Generation Format Logic Update
+const cepBtn = document.getElementById('CEPbtn');
+  if (cepBtn) {
+    cepBtn.addEventListener('click', () => {
+      const notepad = document.getElementById('noteppad');
+      if (!notepad) return;
+
+      const updateCEPRealTime = () => {
+        const channel = document.getElementById('contactChannel')?.value || '';
+        const sfdcCase = document.getElementById('sfdcCase')?.value || '';
+        const cName = document.getElementById('cName')?.value || '';
+        const cnum = document.getElementById('cnum')?.value || '';
+        const cmail = document.getElementById('cmail')?.value || '';
+        const wpermit = document.getElementById('wpermit')?.value || '';
+        const adt = document.getElementById('adt')?.value || '';
+        const cvResult = document.getElementById('cvResult')?.value || '';
+        const troubleshooting = document.getElementById('troubleshooting')?.value || '';
+        const lightStatus = document.getElementById('lightStatus')?.value || '';
+        const wocas = document.getElementById('wocastxtarea')?.value || '';
+
+        notepad.value = 
+`Contact channel Vendor: ${channel} - CND
+SFDC Case Number: ${sfdcCase}
+Additional contact person: ${cName}
+Additional contact number: ${cnum}
+Additional contact email address: ${cmail}
+Working permit needed (Y/N): ${wpermit}
+Available date and time: ${adt}
+Clearview Test Result: ${cvResult}
+Troubleshooting: ${troubleshooting}
+Light status: ${lightStatus}
+Complaint Remarks/WOCAS: ${wocas}`;
+      };
+
+      updateCEPRealTime();
+
+      ['contactChannel', 'sfdcCase', 'cName', 'cnum', 'cmail', 'wpermit', 'adt', 'cvResult', 'troubleshooting', 'lightStatus', 'wocastxtarea'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.removeEventListener('input', el._cepListener);
+          el.removeEventListener('change', el._cepListener);
+          el._cepListener = updateCEPRealTime;
+          el.addEventListener('input', updateCEPRealTime);
+          el.addEventListener('change', updateCEPRealTime);
+        }
+      });
+    });
+  }
