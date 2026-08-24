@@ -343,6 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const abcaHL = document.getElementById('abcaHL');
   const abcaSA = document.getElementById('abcaSA');
   const abcaEC = document.getElementById('abcaEC');
+  const instructionContentHL = document.querySelector('.instructionContentHL');
+  const instructionContentEMAIL = document.querySelector('.instructionContentEMAIL');
 
   if (contactChannel) {
     contactChannel.addEventListener('change', (e) => {
@@ -351,9 +353,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (abcaSA) abcaSA.style.display = 'none';
       if (abcaEC) abcaEC.style.display = 'none';
 
-      if (val === 'ENT-HOTLINE' && abcaHL) abcaHL.style.display = 'block';
-      else if (val === 'ENT-SANA ALL' && abcaSA) abcaSA.style.display = 'block';
-      else if (val === 'ENT-EMAIL' && abcaEC) abcaEC.style.display = 'block';
+      if (val === 'ENT-HOTLINE') {
+        if (abcaHL) abcaHL.style.display = 'block';
+        if (instructionContentHL) instructionContentHL.style.display = 'block';
+        if (instructionContentEMAIL) instructionContentEMAIL.style.display = 'none';
+      } else if (val === 'ENT-SANA ALL') {
+        if (abcaSA) abcaSA.style.display = 'block';
+        if (instructionContentHL) instructionContentHL.style.display = 'none';
+        if (instructionContentEMAIL) instructionContentEMAIL.style.display = 'none';
+      } else if (val === 'ENT-EMAIL') {
+        if (abcaEC) abcaEC.style.display = 'block';
+        if (instructionContentHL) instructionContentHL.style.display = 'none';
+        if (instructionContentEMAIL) instructionContentEMAIL.style.display = 'block';
+      }
     });
   }
 
