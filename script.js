@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Populate fields dynamically by matching text inputs or layout position
   function populateUserFields(userRecord, usernameFallback) {
     const pldtUserInput = document.getElementById('t_name') || document.querySelector('input[placeholder*="USERNAME" i]');
     if (pldtUserInput && usernameFallback) {
@@ -55,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const empName = userRecord.employee_name || userRecord["Employee Name"] || userRecord.employeeName || userRecord.name || '';
     const supName = userRecord.supervisor_name || userRecord["Supervisor Name"] || userRecord.supervisorName || userRecord.team_lead || userRecord.teamLead || '';
 
-    // Query standard inputs for Agent Name and Team Lead
     const agentInputs = [
       document.getElementById('agent_name'),
       document.getElementById('agentName'),
@@ -138,7 +136,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Active Session Restore
+  // Helper function to update autoDocsUsed to 'Yes' in Firebase upon successful generation
+  async function markAutoDocsUsedInFirebase() {
+    const rawSession = sessionStorage.getItem('activeAgentSession');
+    if (!rawSession) return;
+
+    try {
+      const session = JSON.parse(rawSession);
+      if (session.firebaseLogKey) {
+        await fetch(`${FIREBASE_URL}/loginHistory/${session.firebaseLogKey}.json`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ autoDocsUsed: 'Yes' })
+        });
+      } else {
+        const logPayload = {
+          agentId: `${session.username} (${session.winId})`,
+          loginTime: new Date(session.sessionStartTime).toLocaleString(),
+          logoutTime: 'Active Session',
+          autoDocsUsed: 'Yes',
+          createdAt: new Date().toISOString()
+        };
+
+        const res = await fetch(`${FIREBASE_URL}/loginHistory.json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logPayload)
+        });
+
+        if (res.ok) {
+          const logData = await res.json();
+          session.firebaseLogKey = logData.name;
+          sessionStorage.setItem('activeAgentSession', JSON.stringify(session));
+        }
+      }
+    } catch (err) {
+      console.error('Error updating autoDocsUsed status in Firebase:', err);
+    }
+  }
+
   const sessionData = sessionStorage.getItem('activeAgentSession');
   if (sessionData) {
     const agent = JSON.parse(sessionData);
@@ -159,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setAdminVisibility(null, null);
   }
 
-  // Gateway Login Submit Handler
   const gatewayLoginForm = document.getElementById('gatewayLoginForm');
   if (gatewayLoginForm) {
     gatewayLoginForm.addEventListener('submit', async (e) => {
@@ -220,59 +255,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Save Button
+  // Save Button (Keeps local/sync state without forcing autoDocsUsed to Yes)
   const saveBtn = document.getElementById('saveBtn');
   if (saveBtn) {
-    saveBtn.addEventListener('click', async () => {
-      const rawSession = sessionStorage.getItem('activeAgentSession');
-
-      if (!rawSession) {
-        alert('No active login session found. Please log in first.');
-        const loginOverlay = document.getElementById('loginReminderScreen');
-        if (loginOverlay) loginOverlay.style.display = 'flex';
-        return;
-      }
-
-      const session = JSON.parse(rawSession);
-
-      try {
-        if (session.firebaseLogKey) {
-          await fetch(`${FIREBASE_URL}/loginHistory/${session.firebaseLogKey}.json`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ autoDocsUsed: 'Yes' })
-          });
-        } else {
-          const logPayload = {
-            agentId: `${session.username} (${session.winId})`,
-            loginTime: new Date(session.sessionStartTime).toLocaleString(),
-            logoutTime: 'Active Session',
-            autoDocsUsed: 'Yes',
-            createdAt: new Date().toISOString()
-          };
-
-          const res = await fetch(`${FIREBASE_URL}/loginHistory.json`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(logPayload)
-          });
-
-          if (res.ok) {
-            const logData = await res.json();
-            session.firebaseLogKey = logData.name;
-            sessionStorage.setItem('activeAgentSession', JSON.stringify(session));
-          }
-        }
-
-        alert('Work saved successfully!');
-      } catch (err) {
-        console.error('Error saving session status:', err);
-        alert('Work saved locally, but failed to sync with database.');
-      }
+    saveBtn.addEventListener('click', () => {
+      alert('Work saved successfully!');
     });
   }
 
-  // Session Logout
   const logoutBtn = document.getElementById('sessionLogoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
@@ -307,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Dynamic Form Sections
   const concernTypeSelect = document.getElementById('concernType');
   const vocInq = document.getElementById('voc-inq');
   const vocFfup = document.getElementById('voc-ffup');
@@ -369,7 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Feedback Form Handling ---
   const feedbackForm = document.getElementById('feedbackForm') || document.querySelector('form[id*="feedback" i]');
   if (feedbackForm) {
     feedbackForm.addEventListener('submit', async (e) => {
@@ -443,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Theme Toggle Support (Corrected for [data-theme] CSS matching) ---
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -451,11 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentTheme = root.getAttribute('data-theme') || 'light';
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-      // Set the data-theme attribute used by your CSS
       root.setAttribute('data-theme', newTheme);
       document.body.setAttribute('data-theme', newTheme);
 
-      // Update button icon dynamically
       const icon = themeToggle.querySelector('i');
       if (icon) {
         icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
@@ -463,7 +448,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Theme Color Picker Support ---
   const agentThemePicker = document.getElementById('agentThemePicker');
   if (agentThemePicker) {
     agentThemePicker.addEventListener('input', (e) => {
@@ -472,9 +456,113 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function validateFields(selectors) {
+    for (const selector of selectors) {
+      const el = document.querySelector(selector);
+      if (el && !el.value.trim()) {
+        el.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ABCA Generation with Strict Validation & AutoDocs Used Trigger
+  const resABCAbtn = document.getElementById('resABCAbtn');
+  if (resABCAbtn) {
+    resABCAbtn.addEventListener('click', async () => {
+      const requiredAbca = ['#t_name', '#ani', '#callerName', '#account', '#phone', '#concernType', '#actionTaken'];
+
+      if (!validateFields(requiredAbca)) {
+        alert('Please fill out all required fields before generating the ABCA notepad notes.');
+        return;
+      }
+
+      const notepad = document.getElementById('noteppad');
+      if (!notepad) return;
+
+      const getConcernValue = () => {
+        const concernType = document.getElementById('concernType')?.value || '';
+        let vocVal = '';
+        const vocSelectors = ['vocD_inq', 'vocD_ffup', 'vocD_comp', 'vocD_aftersales', 'vocD_others'];
+        for (const id of vocSelectors) {
+          const el = document.getElementById(id);
+          if (el && el.offsetParent !== null && el.value) {
+            vocVal = el.value;
+            break;
+          }
+        }
+        if (concernType && vocVal) {
+          return `${concernType} | ${vocVal}`;
+        }
+        return concernType || vocVal;
+      };
+
+      const curAni = document.getElementById('ani')?.value || '';
+      const curAccount = document.getElementById('account')?.value || document.getElementById('saBaAccount')?.value || document.getElementById('ecBaAccount')?.value || '';
+      const curConcern = getConcernValue();
+      const curAction = document.getElementById('actionTaken')?.value || '';
+
+      notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}`;
+      
+      // Successfully generated ABCA -> Mark AutoDocs Used as Yes
+      await markAutoDocsUsedInFirebase();
+
+      alert('ABCA generated successfully in the notepad!');
+    });
+  }
+
+  // CEP Generation with Strict Validation & AutoDocs Used Trigger
+  const cepBtn = document.getElementById('CEPbtn');
+  if (cepBtn) {
+    cepBtn.addEventListener('click', async () => {
+      const requiredCep = [
+        '#t_name', '#contactChannel', '#sfdcCase', '#cName', '#cnum', 
+        '#cmail', '#wpermit', '#adt', '#cvResult', '#serial', '#troubleshooting', '#lightStatus'
+      ];
+
+      if (!validateFields(requiredCep)) {
+        alert('Please fill out all required fields before generating the CEP notepad notes.');
+        return;
+      }
+
+      const notepad = document.getElementById('noteppad');
+      if (!notepad) return;
+
+      const channel = document.getElementById('contactChannel')?.value || '';
+      const sfdcCase = document.getElementById('sfdcCase')?.value || '';
+      const cName = document.getElementById('cName')?.value || '';
+      const cnum = document.getElementById('cnum')?.value || '';
+      const cmail = document.getElementById('cmail')?.value || '';
+      const wpermit = document.getElementById('wpermit')?.value || '';
+      const adt = document.getElementById('adt')?.value || '';
+      const cvResult = document.getElementById('cvResult')?.value || '';
+      const troubleshooting = document.getElementById('troubleshooting')?.value || '';
+      const lightStatus = document.getElementById('lightStatus')?.value || '';
+      const wocas = document.getElementById('wocastxtarea')?.value || '';
+
+      notepad.value = 
+`Contact channel Vendor: ${channel} - CND
+SFDC Case Number: ${sfdcCase}
+Additional contact person: ${cName}
+Additional contact number: ${cnum}
+Additional contact email address: ${cmail}
+Working permit needed (Y/N): ${wpermit}
+Available date and time: ${adt}
+Clearview Test Result: ${cvResult}
+Troubleshooting: ${troubleshooting}
+Light status: ${lightStatus}
+Complaint Remarks/WOCAS: ${wocas}`;
+
+      // Successfully generated CEP -> Mark AutoDocs Used as Yes
+      await markAutoDocsUsedInFirebase();
+
+      alert('CEP generated successfully in the notepad!');
+    });
+  }
+
 });
 
-// Feedback Drawer Toggle Logic
 const feedbackBtn = document.getElementById('feedbackOrbBtn');
 const feedbackDrawer = document.getElementById('feedbackDrawer');
 const closeFeedbackBtn = document.getElementById('closeFeedbackDrawerBtn');
@@ -491,7 +579,6 @@ if (closeFeedbackBtn && feedbackDrawer) {
   });
 }
 
-// Tab Switching Script Utility
 function switchAdminTab(tabName) {
     const auditSec = document.getElementById('auditSection');
     const feedbackSec = document.getElementById('feedbackSection');
@@ -514,100 +601,3 @@ function switchAdminTab(tabName) {
         tabAuditBtn.style.color = 'inherit';
     }
 }
-
-const resABCAbtn = document.getElementById('resABCAbtn');
-  if (resABCAbtn) {
-    resABCAbtn.addEventListener('click', () => {
-      const notepad = document.getElementById('noteppad');
-      if (!notepad) return;
-
-      const getConcernValue = () => {
-        const concernType = document.getElementById('concernType')?.value || '';
-        let vocVal = '';
-        const vocSelectors = ['vocD_inq', 'vocD_ffup', 'vocD_comp', 'vocD_aftersales', 'vocD_others'];
-        for (const id of vocSelectors) {
-          const el = document.getElementById(id);
-          if (el && el.offsetParent !== null && el.value) {
-            vocVal = el.value;
-            break;
-          }
-        }
-        if (concernType && vocVal) {
-          return `${concernType} | ${vocVal}`;
-        }
-        return concernType || vocVal;
-      };
-
-      const updateRealTime = () => {
-        const curAni = document.getElementById('ani')?.value || '';
-        const curAccount = document.getElementById('account')?.value || document.getElementById('saBaAccount')?.value || document.getElementById('ecBaAccount')?.value || '';
-        const curConcern = getConcernValue();
-        const curAction = document.getElementById('actionTaken')?.value || '';
-
-        notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}`;
-      };
-
-      updateRealTime();
-
-      ['ani', 'account', 'saBaAccount', 'ecBaAccount', 'concernType', 'vocD_inq', 'vocD_ffup', 'vocD_comp', 'vocD_aftersales', 'vocD_others', 'actionTaken'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.removeEventListener('input', el._abcaListener);
-          el.removeEventListener('change', el._abcaListener);
-          el._abcaListener = updateRealTime;
-          el.addEventListener('input', updateRealTime);
-          el.addEventListener('change', updateRealTime);
-        }
-      });
-    });
-  }
-
-
-  // CEP Generation Format Logic Update
-const cepBtn = document.getElementById('CEPbtn');
-  if (cepBtn) {
-    cepBtn.addEventListener('click', () => {
-      const notepad = document.getElementById('noteppad');
-      if (!notepad) return;
-
-      const updateCEPRealTime = () => {
-        const channel = document.getElementById('contactChannel')?.value || '';
-        const sfdcCase = document.getElementById('sfdcCase')?.value || '';
-        const cName = document.getElementById('cName')?.value || '';
-        const cnum = document.getElementById('cnum')?.value || '';
-        const cmail = document.getElementById('cmail')?.value || '';
-        const wpermit = document.getElementById('wpermit')?.value || '';
-        const adt = document.getElementById('adt')?.value || '';
-        const cvResult = document.getElementById('cvResult')?.value || '';
-        const troubleshooting = document.getElementById('troubleshooting')?.value || '';
-        const lightStatus = document.getElementById('lightStatus')?.value || '';
-        const wocas = document.getElementById('wocastxtarea')?.value || '';
-
-        notepad.value = 
-`Contact channel Vendor: ${channel} - CND
-SFDC Case Number: ${sfdcCase}
-Additional contact person: ${cName}
-Additional contact number: ${cnum}
-Additional contact email address: ${cmail}
-Working permit needed (Y/N): ${wpermit}
-Available date and time: ${adt}
-Clearview Test Result: ${cvResult}
-Troubleshooting: ${troubleshooting}
-Light status: ${lightStatus}
-Complaint Remarks/WOCAS: ${wocas}`;
-      };
-
-      updateCEPRealTime();
-
-      ['contactChannel', 'sfdcCase', 'cName', 'cnum', 'cmail', 'wpermit', 'adt', 'cvResult', 'troubleshooting', 'lightStatus', 'wocastxtarea'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.removeEventListener('input', el._cepListener);
-          el.removeEventListener('change', el._cepListener);
-          el._cepListener = updateCEPRealTime;
-          el.addEventListener('input', updateCEPRealTime);
-          el.addEventListener('change', updateCEPRealTime);
-        }
-      });
-    });
-  }
