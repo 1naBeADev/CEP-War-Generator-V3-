@@ -255,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Save Button (Keeps local/sync state without forcing autoDocsUsed to Yes)
   const saveBtn = document.getElementById('saveBtn');
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
@@ -307,12 +306,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const ticketCreation = document.getElementById('ticketCreation');
   const followUpSection = document.getElementById('follow-up');
   const aftersalesSection = document.getElementById('aftersales');
+  const ffupIVRSSection = document.getElementById('ffupIVRS');
 
   if (concernTypeSelect) {
     concernTypeSelect.addEventListener('change', (e) => {
       const val = e.target.value;
       [vocInq, vocFfup, vocComp, vocAftersales, vocOthers].forEach(el => { if (el) el.style.display = 'none'; });
-      [ticketCreation, followUpSection, aftersalesSection].forEach(el => { if (el) el.style.display = 'none'; });
+      [ticketCreation, followUpSection, aftersalesSection, ffupIVRSSection].forEach(el => { if (el) el.style.display = 'none'; });
 
       if (val === 'Inquiry' && vocInq) vocInq.style.display = 'block';
       else if (val === 'Follow-up') {
@@ -325,6 +325,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (vocAftersales) vocAftersales.style.display = 'block';
         if (aftersalesSection) aftersalesSection.style.display = 'block';
       } else if (val === 'Others' && vocOthers) vocOthers.style.display = 'block';
+      else if (val === 'Follow-up-IVRS') {
+        if (ffupIVRSSection) ffupIVRSSection.style.display = 'block';
+      }
     });
   }
 
@@ -408,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inputs.forEach(input => {
           if (input.id !== 't_name') input.value = '';
         });
-        [vocInq, vocFfup, vocComp, vocAftersales, vocOthers, ticketCreation, followUpSection, aftersalesSection].forEach(el => {
+        [vocInq, vocFfup, vocComp, vocAftersales, vocOthers, ticketCreation, followUpSection, aftersalesSection, ffupIVRSSection].forEach(el => {
           if (el) el.style.display = 'none';
         });
       }
@@ -471,7 +474,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const resABCAbtn = document.getElementById('resABCAbtn');
   if (resABCAbtn) {
     resABCAbtn.addEventListener('click', async () => {
-      const requiredAbca = ['#t_name', '#ani', '#callerName', '#account', '#phone', '#concernType', '#actionTaken'];
+      const channel = document.getElementById('contactChannel')?.value || '';
+      let requiredAbca = [];
+
+      if (channel === 'ENT-EMAIL') {
+        requiredAbca = ['#t_name', '#actionTaken'];
+      } else if (channel === 'ENT-HOTLINE') {
+        requiredAbca = ['#t_name', '#ani', '#callerName', '#account', '#phone', '#concernType', '#actionTaken'];
+      } else {
+        requiredAbca = ['#t_name', '#concernType', '#actionTaken'];
+      }
 
       if (!validateFields(requiredAbca)) {
         alert('Please fill out all required fields before generating the ABCA notepad notes.');
@@ -498,13 +510,33 @@ document.addEventListener('DOMContentLoaded', () => {
         return concernType || vocVal;
       };
 
-      const curAni = document.getElementById('ani')?.value || '';
-      const curAccount = document.getElementById('account')?.value || document.getElementById('saBaAccount')?.value || document.getElementById('ecBaAccount')?.value || '';
       const curConcern = getConcernValue();
       const curAction = document.getElementById('actionTaken')?.value || '';
 
-      notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}`;
-      
+      if (channel === 'ENT-EMAIL') {
+        const caseNo = document.getElementById('ecCaseNo')?.value || '';
+        const warNo = document.getElementById('ecWarNo')?.value || '';
+        const ecDated = document.getElementById('ecDated')?.value || '';
+        const custAcc = document.getElementById('EcCaAcccount')?.value || '';
+        const billAcc = document.getElementById('ecBaAccount')?.value || '';
+        const accName = document.getElementById('ecareAccName')?.value || '';
+        const serviceId = document.getElementById('ecServiceID')?.value || '';
+
+        notepad.value = `Case No: ${caseNo}\nWAR No: ${warNo}\nReceived thru Enterprise Care Mailbox\nDated: ${ecDated}\nCustomer Account Number: ${custAcc}\nBilling Account Number: ${billAcc}\nAccount Name: ${accName}\nService ID: ${serviceId}\nConcern: ${curConcern}\nAction Taken: ${curAction}`;
+      } else if (channel === 'ENT-HOTLINE') {
+        const curAni = document.getElementById('ani')?.value || '';
+        const curAccount = document.getElementById('account')?.value || '';
+        const sfdcCase = document.getElementById('sfdcCase')?.value || document.getElementById('sfdcCaseFollow')?.value || document.getElementById('sfdcCaseAfter')?.value || '';
+        const cepTicket = document.getElementById('ticketNum')?.value || '';
+        
+        notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}\nCEP Ticket: ${cepTicket}\nSFDC Case: ${sfdcCase}`;
+      } else {
+        const curAni = document.getElementById('ani')?.value || '';
+        const curAccount = document.getElementById('account')?.value || document.getElementById('saBaAccount')?.value || document.getElementById('ecBaAccount')?.value || '';
+        
+        notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}`;
+      }
+
       // Successfully generated ABCA -> Mark AutoDocs Used as Yes
       await markAutoDocsUsedInFirebase();
 
@@ -516,32 +548,70 @@ document.addEventListener('DOMContentLoaded', () => {
   const cepBtn = document.getElementById('CEPbtn');
   if (cepBtn) {
     cepBtn.addEventListener('click', async () => {
-      const requiredCep = [
-        '#t_name', '#contactChannel', '#sfdcCase', '#cName', '#cnum', 
-        '#cmail', '#wpermit', '#adt', '#cvResult', '#serial', '#troubleshooting', '#lightStatus'
-      ];
-
-      if (!validateFields(requiredCep)) {
-        alert('Please fill out all required fields before generating the CEP notepad notes.');
-        return;
-      }
-
+      const concernTypeVal = document.getElementById('concernType')?.value;
       const notepad = document.getElementById('noteppad');
       if (!notepad) return;
 
-      const channel = document.getElementById('contactChannel')?.value || '';
-      const sfdcCase = document.getElementById('sfdcCase')?.value || '';
-      const cName = document.getElementById('cName')?.value || '';
-      const cnum = document.getElementById('cnum')?.value || '';
-      const cmail = document.getElementById('cmail')?.value || '';
-      const wpermit = document.getElementById('wpermit')?.value || '';
-      const adt = document.getElementById('adt')?.value || '';
-      const cvResult = document.getElementById('cvResult')?.value || '';
-      const troubleshooting = document.getElementById('troubleshooting')?.value || '';
-      const lightStatus = document.getElementById('lightStatus')?.value || '';
-      const wocas = document.getElementById('wocastxtarea')?.value || '';
+      if (concernTypeVal === 'Follow-up-IVRS') {
+        const requiredIVRS = [
+          '#t_name', '#contactChannel', '#cNameIVRS', '#cnumIVRS', '#cmailIVRS', '#wpermitIVRS', '#adtIVRS'
+        ];
 
-      notepad.value = 
+        if (!validateFields(requiredIVRS)) {
+          alert('Please fill out all required fields before generating the CEP notepad notes for Follow-up - IVRS.');
+          return;
+        }
+
+        const channel = document.getElementById('contactChannel')?.value || '';
+        const cName = document.getElementById('cNameIVRS')?.value || '';
+        const cnum = document.getElementById('cnumIVRS')?.value || '';
+        const cmail = document.getElementById('cmailIVRS')?.value || '';
+        const wpermit = document.getElementById('wpermitIVRS')?.value || '';
+        const adt = document.getElementById('adtIVRS')?.value || '';
+        const wocas = document.getElementById('wocastxtarea')?.value || '';
+        const cepTicket = document.getElementById('ticketNum')?.value || '';
+        const actionTaken = document.getElementById('actionTaken')?.value || ''; 
+
+        notepad.value = 
+`Contact channel Vendor: ${channel} - CND
+Additional contact person: ${cName}
+Additional contact number: ${cnum}
+Additional contact email address: ${cmail}
+Working permit needed (Y/N): ${wpermit}
+Available date and time: ${adt}
+WOCAS: ${wocas}
+CEP Ticket: ${cepTicket}
+Action Taken: ${actionTaken}`;
+
+        // Successfully generated CEP -> Mark AutoDocs Used as Yes
+        await markAutoDocsUsedInFirebase();
+
+        alert('CEP (IVRS) generated successfully in the notepad!');
+
+      } else {
+        const requiredCep = [
+          '#t_name', '#contactChannel', '#sfdcCase', '#cName', '#cnum', 
+          '#cmail', '#wpermit', '#adt', '#cvResult', '#serial', '#troubleshooting', '#lightStatus'
+        ];
+
+        if (!validateFields(requiredCep)) {
+          alert('Please fill out all required fields before generating the CEP notepad notes.');
+          return;
+        }
+
+        const channel = document.getElementById('contactChannel')?.value || '';
+        const sfdcCase = document.getElementById('sfdcCase')?.value || '';
+        const cName = document.getElementById('cName')?.value || '';
+        const cnum = document.getElementById('cnum')?.value || '';
+        const cmail = document.getElementById('cmail')?.value || '';
+        const wpermit = document.getElementById('wpermit')?.value || '';
+        const adt = document.getElementById('adt')?.value || '';
+        const cvResult = document.getElementById('cvResult')?.value || '';
+        const troubleshooting = document.getElementById('troubleshooting')?.value || '';
+        const lightStatus = document.getElementById('lightStatus')?.value || '';
+        const wocas = document.getElementById('wocastxtarea')?.value || '';
+
+        notepad.value = 
 `Contact channel Vendor: ${channel} - CND
 SFDC Case Number: ${sfdcCase}
 Additional contact person: ${cName}
@@ -554,10 +624,45 @@ Troubleshooting: ${troubleshooting}
 Light status: ${lightStatus}
 Complaint Remarks/WOCAS: ${wocas}`;
 
-      // Successfully generated CEP -> Mark AutoDocs Used as Yes
-      await markAutoDocsUsedInFirebase();
+        // Successfully generated CEP -> Mark AutoDocs Used as Yes
+        await markAutoDocsUsedInFirebase();
 
-      alert('CEP generated successfully in the notepad!');
+        alert('CEP generated successfully in the notepad!');
+      }
+    });
+  }
+
+  // Minimize and Show toggle functionality for Notepad and LIT Guide when resized
+  const toggleNotepadBtn = document.getElementById('toggleNotepadBtn');
+  const toggleLitBtn = document.getElementById('toggleLitBtn');
+  const outputPanelBox = document.getElementById('outputPanelBox');
+  const suggestionPanelBox = document.getElementById('suggestionPanelBox');
+  const notepadToggleText = document.getElementById('notepadToggleText');
+  const litToggleText = document.getElementById('litToggleText');
+
+  if (toggleNotepadBtn && outputPanelBox) {
+    toggleNotepadBtn.addEventListener('click', () => {
+      outputPanelBox.classList.toggle('minimized-widget');
+      if (outputPanelBox.classList.contains('minimized-widget')) {
+        outputPanelBox.style.display = 'none';
+        notepadToggleText.textContent = 'Show Notepad';
+      } else {
+        outputPanelBox.style.display = 'block';
+        notepadToggleText.textContent = 'Minimize Notepad';
+      }
+    });
+  }
+
+  if (toggleLitBtn && suggestionPanelBox) {
+    toggleLitBtn.addEventListener('click', () => {
+      suggestionPanelBox.classList.toggle('minimized-widget');
+      if (suggestionPanelBox.classList.contains('minimized-widget')) {
+        suggestionPanelBox.style.display = 'none';
+        litToggleText.textContent = 'Show LIT Guide';
+      } else {
+        suggestionPanelBox.style.display = 'block';
+        litToggleText.textContent = 'Minimize LIT Guide';
+      }
     });
   }
 

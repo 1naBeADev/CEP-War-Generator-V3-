@@ -160,18 +160,39 @@ body {
   margin: 0;
 }
 
+/* Minimize / Show Toggle Bar for Resized/Mobile Views */
+.mobile-widgets-control-bar {
+  display: none;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.widget-toggle-btn {
+  flex: 1;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.widget-toggle-btn:hover {
+  opacity: 0.9;
+}
+
 /* 3-Column Layout */
 .layout {
   display: grid;
   grid-template-columns: 1.1fr 1fr 0.9fr;
   gap: 20px;
   align-items: start;
-}
-
-@media (max-width: 1024px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
 }
 
 .inputPanel, .outputPanel, .suggestionPanel {
@@ -429,4 +450,50 @@ button:hover {
 @keyframes pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.2); opacity: 0.5; }
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .mobile-widgets-control-bar {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    background: var(--bg-main);
+    padding: 10px 0;
+    margin-bottom: 15px;
+  }
+
+  /* Hide by default on smaller screens, removing them from the normal flow block */
+  .outputPanel,
+  .suggestionPanel {
+    display: none; 
+    position: fixed;
+    right: 20px;
+    width: 400px;
+    max-width: 90vw;
+    z-index: 9999;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    border: 2px solid var(--primary);
+    overflow-y: auto;
+  }
+
+  /* Toggle class applied via JS */
+  .outputPanel.floating-active,
+  .suggestionPanel.floating-active {
+    display: block !important;
+  }
+
+  /* Specific stacking order and positioning */
+  .outputPanel.floating-active {
+    bottom: 80px; 
+    max-height: 60vh;
+  }
+  
+  .suggestionPanel.floating-active {
+    bottom: 20px;
+    max-height: 50vh;
+  }
 }

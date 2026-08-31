@@ -146,6 +146,12 @@
     </div>
   </header>
 
+  <!-- Minimize / Show Floating Toggle Bar for Small Screens -->
+  <div id="mobileWidgetsControlBar" class="mobile-widgets-control-bar">
+    <button type="button" id="toggleNotepadBtn" class="widget-toggle-btn"><i class="fas fa-keyboard"></i> <span id="notepadToggleText">Show Notepad</span></button>
+    <button type="button" id="toggleLitBtn" class="widget-toggle-btn"><i class="fas fa-book-open"></i> <span id="litToggleText">Show LIT Guide</span></button>
+  </div>
+
   <!-- 3-Column Split Platform Body Layout Matrix -->
   <main class="layout">
     
@@ -244,27 +250,37 @@
       </div>
 
       <div id="abcaEC" class="form-group" style="display:none;">
-        <div class="form-group">
-          <label>Received thru Enterprise Care Mailbox Dated</label>
+        <div class="form-grid">
+          <div>
+            <label>Case No:</label>
+            <input type="text" name="ecCaseNo" id="ecCaseNo">
+          </div>
+          <div>
+            <label>WAR No:</label>
+            <input type="text" name="ecWarNo" id="ecWarNo">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 8px;">
+          <label>Received thru Enterprise Care Mailbox<br>Dated:</label>
           <input type="text" name="ecDated" id="ecDated">
         </div>
         <div class="form-grid">
           <div>
-            <label>Customer Account#</label>
+            <label>Customer Account Number:</label>
             <input type="text" name="EcCaAcccount" id="EcCaAcccount">
           </div>
           <div>
-            <label>Billing Account#</label>
+            <label>Billing Account Number:</label>
             <input type="text" name="ecBaAccount" id="ecBaAccount">
           </div>
         </div>
         <div class="form-grid" style="margin-top: 8px;">
           <div>
-            <label>Account Name</label>
-            <input type="text" name="ecAccName" id="ecAccName">
+            <label>Account Name:</label>
+            <input type="text" name="ecAccName" id="ecareAccName">
           </div>
           <div>
-            <label>Service ID</label>
+            <label>Service ID:</label>
             <input type="text" name="ecServiceID" id="ecServiceID">
           </div>
         </div>
@@ -279,6 +295,7 @@
               <option value="Inquiry">Inquiry</option>
               <option value="Complaint">Complaint</option>
               <option value="Follow-up">Follow-up</option>
+              <option value="Follow-up-IVRS">Follow-up - IVRS</option>
               <option value="Aftersales">Aftersales</option>
               <option value="Others">Others</option>
             </select>
@@ -439,7 +456,12 @@
           <div class="form-grid" style="margin-top: 8px;">
             <div>
               <label>Working permit*</label>
-              <input type="text" name="wpermit" id="wpermit">
+              <select name="wpermit" id="wpermit">
+                <option value=""></option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="For Verification">For Verification</option>
+              </select>
             </div>
             <div>
               <label>Available Date and Time*</label>
@@ -463,6 +485,47 @@
           <div class="form-group" style="margin-top: 8px;">
             <label>ONU Light Status*</label>
             <input type="text" name="lightStatus" id="lightStatus">
+          </div>
+        </div>
+
+        <div id="ffupIVRS" style="display:none;">
+          <div class="form-grid">
+            <div>
+              <label>Contact Name*</label>
+              <input type="text" name="cNameIVRS" id="cNameIVRS">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 8px;">
+            <div>
+              <label>Contact Number*</label>
+              <input type="text" name="cnumIVRS" id="cnumIVRS">
+            </div>
+            <div>
+              <label>Contact Email*</label>
+              <input type="text" name="cmailIVRS" id="cmailIVRS">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 8px;">
+            <div>
+              <label>Working permit*</label>
+              <select name="wpermitIVRS" id="wpermitIVRS">
+                <option value=""></option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="For Verification">For Verification</option>
+              </select>
+            </div>
+            <div>
+              <label>Available Date and Time*</label>
+              <input type="text" name="adtIVRS" id="adtIVRS">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 8px;">
+            <div>
+              <label>Ticket Number</label>
+              <input type="number" name="ticketNum" id="ticketNum">
+            </div>             
+            </div>
           </div>
         </div>
 
@@ -518,7 +581,7 @@
     </section>
 
     <!-- Column 2: Live Operational Notepad Workspace -->
-    <section class="outputPanel">
+    <section class="outputPanel" id="outputPanelBox">
       <div class="panel-header">
         <h3><i class="fas fa-keyboard"></i> Result Notepad</h3>
       </div>
@@ -528,7 +591,7 @@
     </section>
 
     <!-- Column 3: Diagnostic Link Playbook / Reference Guidelines -->
-    <section class="suggestionPanel">
+    <section class="suggestionPanel" id="suggestionPanelBox">
       <div class="panel-header">
         <h3><i class="fas fa-book-open"></i> LIT Guide</h3>
       </div>
@@ -568,7 +631,6 @@
             <li>BOL/e Enrollment: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/PLDT_ENTERPRISE_HANDLING_FOR_BOL_ENROLLMENT_VIA_HOTLINE.aspx" target="_blank">BOL/e Enrollment</a></li>
             <li>Service Rebate: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_HOTLINE_HOTLINE_HANDLING_OF_SERVICE_REBATE_FOR_SIMPLE_SERVICES_GENUINE.aspx" target="_blank">Service Rebate</a></li>
             <li>Request for modify billing Address: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_HOTLINE_PLDT_ENTERPRISE_GENUINE_HOTLINE_HANDLING_OF_REQUEST_FOR_MODIFY_BILLING_ADDRESS.aspx" target="_blank">Request for modify billing Address</a></li>
-
           </ul>
         </div>
       </div>
@@ -603,7 +665,6 @@
             <li>Upgrade Request: <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_PLDT_ENTERPRISE_GENUINE_EMAIL_CENTER_UPGRADE_REQUEST.aspx" target="_blank">Upgrade Request</a></li>
             <li>Voluntary Temporary Disconnection (VTD): <a href="https://pldt365.sharepoint.com/sites/PLDTCCareLIT365/SitePages/EMAIL_CENTER_PLDT_ENTERPRISE_GENUINE_EMAIL_HANDLING_OF_VOLUNTARY_TEMPORARY_DISCONNECTION_VTD.aspx" target="_blank">Voluntary Temporary Disconnection (VTD)</a></li>
             <li>Winback Offer for Disconnection Request for Direct Line Service Only: <a href="https://pldt365.sharepoint.com/sites/PLDTHome/SitePages/FPLDT_ENT_EMAIL_WINBACK_OFFER_FOR_DISCONNECTION_REQUEST_FOR_DIRECT_LINE_SERVICE_ONLY.aspx" target="_blank">Winback Offer for Disconnection Request for Direct Line Service Only</a></li>
-
           </ul>
         </div>
       </div>
