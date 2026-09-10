@@ -3,8 +3,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const FIREBASE_URL = 'https://autodocs-a12f0-default-rtdb.firebaseio.com';
 
   const AUTHORIZED_ADMINS = [
+    //QA
+    { winId: '52385305', username: 't-jtagores' },
     { winId: '52499941', username: 't-jrcote' },
-    { winId: '52385305', username: 't-jtagores' }
+    { winId: '52344425', username: 't-isdadulla' },
+    { winId: '52394964', username: 't-mrcruz' },
+    { winId: '52436352', username: 't-kcparocha' },
+    { winId: '52437856', username: 't-btaraneta' },
+    { winId: '52470048', username: 't-epsendaydiego' },
+    { winId: '52514076', username: 'T-RMSUASIO' },
+    { winId: '52526418', username: 'T-SMAbdul1' },
+
+    //ENT ECARE
+    { winId: '52410331', username: 't-rrosales' },
+    { winId: '52345588', username: 't-jbpidlaoan' },
+    { winId: '30144475', username: 't-cnguevarra' },
+    { winId: '52402764', username: 't-jpfruelda' },
+    { winId: '52428906', username: 't-jjferrer' },
+    { winId: '52356047', username: 'T-MZDIMAAMPAO' },
+    { winId: '', username: '' },
+
+    //ENT HOTLINE
+    { winId: '52396457', username: 'T-MARDREYES' },
+    { winId: '52423238', username: 't-ecruz' },
+    { winId: '52444560', username: 't-jcuesta' },
+    { winId: '52524952', username: 'T-CCPegarido' },
+
+    //ENT SANA ALL
+    { winId: '30168916', username: 'T-JONVELASCO' },
+    { winId: '52433183', username: 't-krrosales' },
+    { winId: '52315258', username: 'T-JFRAGO' }
   ];
 
   function isAuthorizedAdmin(winId, username) {
@@ -57,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const agentInputs = [
       document.getElementById('agent_name'),
       document.getElementById('agentName'),
-      document.getElementById('a_name'),
+      document.getElementById('aName'),
       document.querySelector('input[name="agent_name"]'),
       document.querySelector('input[name="agentName"]'),
       document.querySelectorAll('.header-control-actions ~ * input[type="text"], main input[type="text"]')[0]
@@ -136,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Helper function to update autoDocsUsed to 'Yes' in Firebase upon successful generation
   async function markAutoDocsUsedInFirebase() {
     const rawSession = sessionStorage.getItem('activeAgentSession');
     if (!rawSession) return;
@@ -409,7 +436,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (confirm('Clear all input fields?')) {
         const inputs = document.querySelectorAll('main input, main textarea, main select');
         inputs.forEach(input => {
-          if (input.id !== 't_name') input.value = '';
+          if (input.id !== 't_name' && input.id !== 'aName' && input.id !== 'teamLead' && input.id !== 'contactChannel') {
+            input.value = '';
+          }
         });
         [vocInq, vocFfup, vocComp, vocAftersales, vocOthers, ticketCreation, followUpSection, aftersalesSection, ffupIVRSSection].forEach(el => {
           if (el) el.style.display = 'none';
@@ -470,7 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return true;
   }
 
-  // ABCA Generation with Strict Validation & AutoDocs Used Trigger
   const resABCAbtn = document.getElementById('resABCAbtn');
   if (resABCAbtn) {
     resABCAbtn.addEventListener('click', async () => {
@@ -527,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const curAni = document.getElementById('ani')?.value || '';
         const curAccount = document.getElementById('account')?.value || '';
         const sfdcCase = document.getElementById('sfdcCase')?.value || document.getElementById('sfdcCaseFollow')?.value || document.getElementById('sfdcCaseAfter')?.value || '';
-        const cepTicket = document.getElementById('ticketNum')?.value || '';
+        const cepTicket = Array.from(document.querySelectorAll('#ticketNum, input[name="ticketNum"]')).find(el => el.value)?.value || '';
         
         notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}\nCEP Ticket: ${cepTicket}\nSFDC Case: ${sfdcCase}`;
       } else {
@@ -537,14 +565,12 @@ document.addEventListener('DOMContentLoaded', () => {
         notepad.value = `Ani: ${curAni}\nBilling Account Number: ${curAccount}\nConcern: ${curConcern}\nAction Taken: ${curAction}`;
       }
 
-      // Successfully generated ABCA -> Mark AutoDocs Used as Yes
       await markAutoDocsUsedInFirebase();
 
       alert('ABCA generated successfully in the notepad!');
     });
   }
 
-  // CEP Generation with Strict Validation & AutoDocs Used Trigger
   const cepBtn = document.getElementById('CEPbtn');
   if (cepBtn) {
     cepBtn.addEventListener('click', async () => {
@@ -569,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wpermit = document.getElementById('wpermitIVRS')?.value || '';
         const adt = document.getElementById('adtIVRS')?.value || '';
         const wocas = document.getElementById('wocastxtarea')?.value || '';
-        const cepTicket = document.getElementById('ticketNum')?.value || '';
+        const cepTicket = Array.from(document.querySelectorAll('#ticketNum, input[name="ticketNum"]')).find(el => el.value)?.value || '';
         const actionTaken = document.getElementById('actionTaken')?.value || ''; 
 
         notepad.value = 
@@ -583,7 +609,6 @@ WOCAS: ${wocas}
 CEP Ticket: ${cepTicket}
 Action Taken: ${actionTaken}`;
 
-        // Successfully generated CEP -> Mark AutoDocs Used as Yes
         await markAutoDocsUsedInFirebase();
 
         alert('CEP (IVRS) generated successfully in the notepad!');
@@ -624,7 +649,6 @@ Troubleshooting: ${troubleshooting}
 Light status: ${lightStatus}
 Complaint Remarks/WOCAS: ${wocas}`;
 
-        // Successfully generated CEP -> Mark AutoDocs Used as Yes
         await markAutoDocsUsedInFirebase();
 
         alert('CEP generated successfully in the notepad!');
@@ -632,7 +656,55 @@ Complaint Remarks/WOCAS: ${wocas}`;
     });
   }
 
-  // Minimize and Show toggle functionality for Notepad and LIT Guide when resized
+  const specialInstructionsBtn = document.getElementById('specialInstructionsBtn');
+  if (specialInstructionsBtn) {
+    specialInstructionsBtn.addEventListener('click', async () => {
+      const concernTypeVal = document.getElementById('concernType')?.value;
+      const notepad = document.getElementById('noteppad');
+      if (!notepad) return;
+
+      let contactPersonVal = '';
+      let contactNumberVal = '';
+      let contactEmailVal = '';
+      let workingPermitVal = '';
+      let availableDateVal = '';
+
+      if (concernTypeVal === 'Follow-up-IVRS') {
+        const requiredSI = ['#cNameIVRS', '#cnumIVRS', '#cmailIVRS', '#wpermitIVRS', '#adtIVRS'];
+        if (!validateFields(requiredSI)) {
+          alert('Please fill out all required contact fields for Special Instructions.');
+          return;
+        }
+        contactPersonVal = document.getElementById('cNameIVRS')?.value || '';
+        contactNumberVal = document.getElementById('cnumIVRS')?.value || '';
+        contactEmailVal = document.getElementById('cmailIVRS')?.value || '';
+        workingPermitVal = document.getElementById('wpermitIVRS')?.value || '';
+        availableDateVal = document.getElementById('adtIVRS')?.value || '';
+      } else {
+        const requiredSI = ['#cName', '#cnum', '#cmail', '#wpermit', '#adt'];
+        if (!validateFields(requiredSI)) {
+          alert('Please fill out all required contact fields for Special Instructions.');
+          return;
+        }
+        contactPersonVal = document.getElementById('cName')?.value || '';
+        contactNumberVal = document.getElementById('cnum')?.value || '';
+        contactEmailVal = document.getElementById('cmail')?.value || '';
+        workingPermitVal = document.getElementById('wpermit')?.value || '';
+        availableDateVal = document.getElementById('adt')?.value || '';
+      }
+
+      notepad.value = 
+`Contact Person: ${contactPersonVal}
+Contact number: ${contactNumberVal}
+Contact Email: ${contactEmailVal}
+Working permit: ${workingPermitVal}
+Available date and time: ${availableDateVal}`;
+
+      await markAutoDocsUsedInFirebase();
+      alert('Special Instructions generated successfully in the notepad!');
+    });
+  }
+
   const toggleNotepadBtn = document.getElementById('toggleNotepadBtn');
   const toggleLitBtn = document.getElementById('toggleLitBtn');
   const outputPanelBox = document.getElementById('outputPanelBox');

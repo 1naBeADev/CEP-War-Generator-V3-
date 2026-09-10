@@ -220,7 +220,7 @@
         <div class="form-grid">
           <div>
             <label>RITM Number</label>
-            <input type="number" name="ritm" id="ritm">
+            <input type="text" name="ritm" id="ritm">
           </div>
           <div>
             <label>Received thru Sana All Dated</label>
@@ -317,6 +317,7 @@
                   <option value="Resume VTD">Resume VTD (VTD)</option>
                   <option value="VTD">Voluntary Temporary Disconnection</option>
                   <option value="Change Number">Change Number</option>
+                  <option value="New Install">New Install</option>
                 </optgroup>
                 <optgroup label="Billing">
                   <option value="Billing Inquiry">Billing Inquiry</option>
@@ -325,6 +326,7 @@
                   <option value="BOL/e Enrollment">BOL/e Enrollment</option>
                   <option value="Service Rebate">Service Rebate</option>
                   <option value="Request for modify billing Address">Request for modify billing Address</option>
+                  <option value="Tax Adjustment">Tax Adjustment</option>
                 </optgroup>
               </select>
             </div>
@@ -349,12 +351,14 @@
                   <option value="Follow up New Connect">New Connect</option>
                   <option value="Follow up Rerouting">Rerouting</option>
                   <option value="Follow up Change Number">Change Number</option>
+                  <option value="Follow up New Install">Change Number</option>
                 </optgroup>
                 <optgroup label="Billing">
                   <option value="Follow up Unposted Payment">Unposted Payment</option>
                   <option value="Follow up Copy of Bill">Copy of Bill</option>
                   <option value="Follow up BOL/e Enrollment">BOL/e Enrollment</option>
                   <option value="Follow up Service Rebate">Service Rebate</option>
+                  <option value="Tax Adjustment">Tax Adjustment</option>
                 </optgroup>
               </select>
             </div>
@@ -366,8 +370,10 @@
                 <optgroup label="Voice and Data">
                   <option value="No Internet Connection and Dialtone">No Internet Connection and Dialtone</option>
                 </optgroup>
-                <optgroup label="Date">
+                <optgroup label="Data">
                   <option value="No Internet Connection">No Internet Connection</option>
+                  <option value="Slow Internet Connection">Slow Internet Connection</option>
+                  <option value="Intermittent Connection">Intermittent Connection</option>
                   <option value="Bridge Mode Configuration">Bridge Mode Configuration</option>
                   <option value="CGNAT Deactivation/Activation">CGNAT Deactivation/Activation</option>
                   <option value="Full Modem Access Request">Full Modem Access Request</option>
@@ -403,6 +409,7 @@
                   <option value="Upgrade Request">Upgrade Request</option>
                   <option value="Voluntary VTD">Voluntary VTD</option>
                   <option value="Downgrade Request">Downgrade Request</option>
+                  <option value="New Install">New Install</option>
                 </optgroup>
               </select>
             </div>
@@ -575,7 +582,10 @@
         <button type="button" class="btn-secondary" id="resABCAbtn">ABCA</button>
       </div>
       <div class="form-grid" style="margin-top: 8px;">
+        <button type="button" class="btn-secondary" id="specialInstructionsBtn" style="background-color: var(--primary); color: white;"><i class="fas fa-list-alt"></i> Special Instructions</button>
         <button type="button" class="btn-secondary" id="resetBtn" style="background-color: #64748b; color: white;"><i class="fas fa-undo"></i> Reset</button>
+      </div>
+      <div class="form-group" style="margin-top: 8px;">
         <button type="button" class="btn-secondary" id="toTXTbtn" style="width:100%;"><i class="fas fa-file-alt"></i> Export TXT</button>
       </div>
     </section>
