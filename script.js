@@ -635,6 +635,7 @@ Action Taken: ${actionTaken}`;
         const troubleshooting = document.getElementById('troubleshooting')?.value || '';
         const lightStatus = document.getElementById('lightStatus')?.value || '';
         const wocas = document.getElementById('wocastxtarea')?.value || '';
+        const actionTaken = document.getElementById('actionTaken')?.value || '';
 
         notepad.value = 
 `Contact channel Vendor: ${channel} - CND
@@ -647,7 +648,8 @@ Available date and time: ${adt}
 Clearview Test Result: ${cvResult}
 Troubleshooting: ${troubleshooting}
 Light status: ${lightStatus}
-Complaint Remarks/WOCAS: ${wocas}`;
+Complaint Remarks/WOCAS: ${wocas}
+Action Taken: ${actionTaken}`;
 
         await markAutoDocsUsedInFirebase();
 
