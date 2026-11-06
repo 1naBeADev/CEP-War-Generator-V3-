@@ -635,6 +635,7 @@ Action Taken: ${actionTaken}`;
         const troubleshooting = document.getElementById('troubleshooting')?.value || '';
         const lightStatus = document.getElementById('lightStatus')?.value || '';
         const wocas = document.getElementById('wocastxtarea')?.value || '';
+        const serial = document.getElementById('serial')?.value || '';
         const actionTaken = document.getElementById('actionTaken')?.value || '';
 
         notepad.value = 
@@ -646,6 +647,7 @@ Additional contact email address: ${cmail}
 Working permit needed (Y/N): ${wpermit}
 Available date and time: ${adt}
 Clearview Test Result: ${cvResult}
+ONU Serial Number: ${serial}
 Troubleshooting: ${troubleshooting}
 Light status: ${lightStatus}
 Complaint Remarks/WOCAS: ${wocas}
